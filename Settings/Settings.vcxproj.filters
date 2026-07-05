@@ -120,18 +120,6 @@
     <ClInclude Include="..\3RVX\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Updater\UpdaterWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Updater\Updater.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Updater\Version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Updater\ProgressWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Controls\Dialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -254,12 +242,6 @@
     <ClCompile Include="..\3RVX\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Updater\Updater.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Updater\UpdaterWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Controls\Dialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -267,9 +249,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Controls\ProgressBar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Updater\ProgressWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Tabs\OSD.cpp">
@@ -303,16 +282,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
+    <Image Include="..\Assets\AppIcons\Settings\settings_icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Settings.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\Assets\settings_icon.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\Assets\main_icon.ico">
+    <Image Include="..\Assets\AppIcons\Main\main_icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -110,16 +110,6 @@ void _3RVX::Initialize() {
     Settings *settings = Settings::Instance();
     settings->Load();
 
-    KillTimer(Window::Handle(), TIMER_FIRSTUPDATE);
-    KillTimer(Window::Handle(), TIMER_UPDATE);
-    if (settings->AutomaticUpdates()) {
-        SetTimer(
-            Window::Handle(),
-            TIMER_FIRSTUPDATE,
-            FIRSTUPDATE_INTERVAL,
-            NULL);
-    }
-
     SkinManager::Instance()->LoadSkin(settings->SkinXML());
 
     DisplayManager::UpdateMonitorMap();
@@ -257,31 +247,6 @@ LRESULT _3RVX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
         break;
     }
 
-    case WM_TIMER:
-        if (wParam == TIMER_FIRSTUPDATE || wParam == TIMER_UPDATE) {
-            CLOG(L"Received updater timer notification");
-            Settings *settings = Settings::Instance();
-            long long checkTime = settings->LastUpdateCheck();
-            if ((std::time(nullptr) - checkTime) > (UPDATE_INTERVAL / 1000)) {
-                /* Enough time has elapsed since the last update check */
-                std::wstring settingsApp = Settings::SettingsApp();
-                CLOG(L"Launching update task: %s %s",
-                    settingsApp.c_str(), L"-update");
-                ShellExecute(NULL, L"open",
-                    Settings::SettingsApp().c_str(), L"-update", NULL, SW_HIDE);
-            }
-
-            if (wParam == TIMER_FIRSTUPDATE) {
-                CLOG(L"Starting long-term update timer");
-                /* If this was the first update check (30 min after launch),
-                 * then kill the first update timer and start the main timer
-                 * (checks on 24-hour intervals) */
-                KillTimer(Window::Handle(), TIMER_FIRSTUPDATE);
-                SetTimer(Window::Handle(), TIMER_UPDATE,
-                    UPDATE_INTERVAL, NULL);
-            }
-        }
-        break;
     }
 
     if (message == _3RVX::WM_3RVX_CTRL) {

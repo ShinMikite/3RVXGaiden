@@ -8,7 +8,7 @@
 @REM
 
 @ECHO OFF
-TITLE 3RVX Installer Builder
+TITLE 3RVXGaiden Installer Builder
 ECHO "   _____ ______     ____  _______   "
 ECHO "  |___ /|  _ \ \   / /\ \/ /___ /   "
 ECHO "    |_ \| |_) \ \ / /  \  /  |_ \   "
@@ -16,8 +16,8 @@ ECHO "   ___) |  _ < \ V /   /  \ ___) |  "
 ECHO "  |____/|_| \_\ \_/   /_/\_\____/   "
 ECHO "                                    "
 
-ECHO This script will generate a 3RVX installer.
-set /p version= "Enter 3RVX Version (X.X.X): "
+ECHO This script will generate a 3RVXGaiden installer.
+set /p version= "Enter 3RVXGaiden Version (X.X.X): "
 ECHO.
 
 ECHO Setting Version: %version%
@@ -29,10 +29,10 @@ ECHO ON
 del "../Release/Settings.xml"
 
 set PATH=%PATH%;%WIX%\bin
-heat dir ../Release -gg -srd -cg 3RVXComponents -dr INSTALLFOLDER -out 3RVXComponents.wxs
-candle -pedantic -dProductVersion=%version%.0 ./3RVX.wxs ./3RVXComponents.wxs
-light -b ../Release -ext WixUIExtension ./3RVX.wixobj ./3RVXComponents.wixobj -o 3RVX-%version%.msi
-del 3RVX.wixobj 3RVX.wixpdb 3RVXComponents.wxs 3RVXComponents.wixobj
+heat dir ../Release -gg -srd -cg 3RVXGaidenComponents -dr INSTALLFOLDER -out 3RVXGaidenComponents.wxs
+candle -pedantic -dProductVersion=%version%.0 ./3RVXGaiden.wxs ./3RVXGaidenComponents.wxs
+light -b ../Release -ext WixUIExtension ./3RVXGaiden.wixobj ./3RVXGaidenComponents.wixobj -o 3RVXGaiden-%version%.msi
+del 3RVXGaiden.wixobj 3RVXGaiden.wixpdb 3RVXGaidenComponents.wxs 3RVXGaidenComponents.wixobj
 
 @ECHO OFF
 ECHO.
@@ -41,9 +41,9 @@ IF EXIST "7za.exe" (
 	ECHO Creating .zip distribution...
 	ECHO.
 	ECHO ON
-	del 3RVX-%version%.zip
+	del 3RVXGaiden-%version%.zip
 	copy "..\Assets\EmptySettings.xml" "..\Release\Settings.xml"
-	7za a -tzip -mx9 3RVX-%version%.zip ../Release/*
+	7za a -tzip -mx9 3RVXGaiden-%version%.zip ../Release/*
 )
 
 @ECHO OFF

@@ -13,7 +13,8 @@
 
 BrightnessOSD::BrightnessOSD() :
 OSD(L"3RVX-BrightnessDispatcher"),
-_mWnd(L"3RVX-BrightnessOSD", L"3RVX-BrightnessOSD") {
+_mWnd(L"3RVX-BrightnessOSD", L"3RVX-BrightnessOSD"),
+_brightnessCtrl(nullptr) {
 
     SkinManager *skin = SkinManager::Instance();
     _mWnd.BackgroundImage(skin->BrightnessOSD()->background);
@@ -22,12 +23,20 @@ _mWnd(L"3RVX-BrightnessOSD", L"3RVX-BrightnessOSD") {
 
     OSD::InitMeterWnd(_mWnd);
 
-    _brightnessCtrl = new DDCBrightnessController(
-        DisplayManager::Primary().Handle());
 }
 
 BrightnessOSD::~BrightnessOSD() {
     delete _brightnessCtrl;
+}
+
+bool BrightnessOSD::EnsureBrightnessController() {
+    if (_brightnessCtrl != nullptr) {
+        return true;
+    }
+
+    _brightnessCtrl = new DDCBrightnessController(
+        DisplayManager::Primary().Handle());
+    return _brightnessCtrl != nullptr;
 }
 
 void BrightnessOSD::Hide() {
@@ -39,6 +48,10 @@ void BrightnessOSD::HideIcon() {
 }
 
 void BrightnessOSD::ProcessHotkeys(HotkeyInfo &hki) {
+    if (!EnsureBrightnessController()) {
+        return;
+    }
+
     switch (hki.action) {
 	case HotkeyInfo::IncreaseBrightness: {
 		float newval = _brightnessCtrl->Brightness() + _stepsize;
@@ -60,10 +73,11 @@ void BrightnessOSD::ProcessHotkeys(HotkeyInfo &hki) {
 
 void BrightnessOSD::OnDisplayChange() {
     InitMeterWnd(_mWnd);
+    delete _brightnessCtrl;
+    _brightnessCtrl = nullptr;
 }
 
 LRESULT
 BrightnessOSD::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     return OSD::WndProc(hWnd, message, wParam, lParam);
 }
-

@@ -414,7 +414,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\Assets\main_icon.ico">
+    <Image Include="..\Assets\AppIcons\Main\main_icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

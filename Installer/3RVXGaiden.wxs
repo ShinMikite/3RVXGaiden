@@ -2,11 +2,11 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product
     Id="*"
-    Name="3RVX"
+    Name="3RVXGaiden"
     Language="1033"
     Version="$(var.ProductVersion)"
-    Manufacturer="Matthew Malensek"
-    UpgradeCode="8DF572AB-65FE-44FF-985C-A3440D59E4A0">
+    Manufacturer="ShinMikite"
+    UpgradeCode="BFA0BA33-F9A2-49DE-BE91-F729D39F7D24">
 
     <Package
       InstallerVersion="200"
@@ -18,18 +18,18 @@
     <MediaTemplate EmbedCab="yes"/>
 
     <Feature Id="ProductFeature" Title="Installer" Level="1">
-      <ComponentGroupRef Id="3RVXComponents" />
+      <ComponentGroupRef Id="3RVXGaidenComponents" />
       <ComponentRef Id="ApplicationShortcut"/>
     </Feature>
 
     <!-- Installation Directory -->
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="INSTALLFOLDER" Name="3RVX"/>
+        <Directory Id="INSTALLFOLDER" Name="3RVXGaiden"/>
       </Directory>
 
       <Directory Id="ProgramMenuFolder">
-        <Directory Id="ApplicationProgramsFolder" Name="3RVX"/>
+        <Directory Id="ApplicationProgramsFolder" Name="3RVXGaiden"/>
       </Directory>
     </Directory>
 
@@ -37,19 +37,19 @@
     <DirectoryRef Id="ApplicationProgramsFolder">
       <Component Id="ApplicationShortcut" Guid="*">
         <Shortcut Id="ApplicationStartMenuShortcut"
-                  Name="3RVX"
-                  Description="Skinnable Volume Controller and OSD"
+                  Name="3RVXGaiden"
+                  Description="Skinnable volume controller and OSD"
                   Target="[INSTALLFOLDER]3RVX.exe"
                   WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
         <Shortcut Id="SettingsStartMenuShortcut"
                   Name="Settings"
-                  Description="3RVX Settings Editor"
+                  Description="3RVXGaiden Settings Editor"
                   Target="[INSTALLFOLDER]Settings.exe"
                   WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
 
         <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
         <RegistryValue Root="HKCU"
-                       Key="Software\3RVX"
+                       Key="Software\3RVXGaiden"
                        Name="installed"
                        Type="integer"
                        Value="1"
@@ -57,7 +57,7 @@
       </Component>
     </DirectoryRef>
 
-    <Icon Id="icon.ico" SourceFile="../Assets/main_icon.ico"/>
+    <Icon Id="icon.ico" SourceFile="../Assets/AppIcons/Main/main_icon.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico" />
 
     <WixVariable Id="WixUIBannerBmp" Value="../Assets/InstallBanner.jpg" />

@@ -28,7 +28,6 @@ private:
     void LoadSkinInfo(std::wstring skinName);
     bool RunOnStartup();
     bool RunOnStartup(bool enable);
-    bool CheckForUpdates();
 
 private:
     /* Controls: */
@@ -36,8 +35,6 @@ private:
     Checkbox *_startup;
     Checkbox *_showStartup;
     Checkbox *_sounds;
-    Checkbox *_autoUpdate;
-    Button *_checkNow;
 
     GroupBox *_skinGroup;
     ComboBox *_skin;

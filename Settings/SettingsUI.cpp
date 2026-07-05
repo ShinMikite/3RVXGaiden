@@ -33,11 +33,11 @@ typedef struct DLGTEMPLATEEX
 #include "Tabs/Hotkeys.h"
 #include "Tabs/About.h"
 #include "UITranslator.h"
-#include "Updater/Updater.h"
-#include "Updater/UpdaterWindow.h"
 
 /* Needed to determine whether the Apply button is enabled/disabled */
 static const int IDD_APPLYNOW = 0x3021;
+static const int IDT_RELOAD_3RVX = 1;
+static const UINT RELOAD_3RVX_DELAY_MS = 250;
 
 const wchar_t *MUTEX_NAME = L"Local\\3RVXSettings";
 HANDLE mutex;
@@ -66,41 +66,11 @@ int APIENTRY wWinMain(
         alreadyRunning = true;
     }
 
-    /* Inspect command line parameters to determine whether this settings
-     * instance is being launched as an update checker. */
+    /* Automatic updates are disabled for 3RVXGaiden. GitHub Releases are the
+     * supported update source for now. */
     std::wstring cmdLine(lpCmdLine);
     if (cmdLine.find(L"-update") != std::wstring::npos) {
-        if (alreadyRunning) {
-            return EXIT_SUCCESS;
-        } else {
-            /* If this is the only settings instance running, we release the 
-             * mutex so that the user can launch the settings app. If this
-             * happens, the updater is closed to prevent settings file race
-             * conditions. */
-            if (mutex) {
-                ReleaseMutex(mutex);
-                CloseHandle(mutex);
-            }
-        }
-
-        if (Updater::NewerVersionAvailable()) {
-            Settings::Instance()->Load();
-            CLOG(L"An update is available. Showing update icon.");
-            UpdaterWindow uw;
-            PostMessage(
-                uw.Handle(),
-                _3RVX::WM_3RVX_SETTINGSCTRL,
-                _3RVX::MSG_UPDATEICON,
-                NULL);
-            uw.DoModal();
-        } else {
-#if defined(ENABLE_3RVX_LOG) && (defined(ENABLE_3RVX_LOGTOFILE) == FALSE)
-            CLOG(L"No update available. Press [enter] to terminate");
-            std::cin.get();
-#endif
-        }
-
-        /* Process was used for updates; time to quit. */
+        CLOG(L"Ignoring disabled update check.");
         return EXIT_SUCCESS;
     }
 
@@ -171,7 +141,7 @@ INT_PTR SettingsUI::LaunchPropertySheet() {
     psh.hwndParent = Window::Handle();
     psh.hInstance = Window::InstanceHandle();
     psh.pszIcon = MAKEINTRESOURCE(IDI_SETTINGS);
-    psh.pszCaption = L"3RVX Settings";
+    psh.pszCaption = L"3RVXGaiden Settings";
     psh.nStartPage = 0;
     psh.nPages = _tabs.size();
     psh.phpage = pages;
@@ -197,7 +167,12 @@ LRESULT SettingsUI::WndProc(
         HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
     if (message == WM_DESTROY) {
+        KillTimer(hWnd, IDT_RELOAD_3RVX);
         PostQuitMessage(0);
+    } else if (message == WM_TIMER && wParam == IDT_RELOAD_3RVX) {
+        KillTimer(hWnd, IDT_RELOAD_3RVX);
+        CLOG(L"Notifying 3RVX process of delayed settings change");
+        _3RVX::Message(_3RVX::MSG_LOAD, NULL, true);
     } else if (message == _3RVX::WM_3RVX_SETTINGSCTRL) {
         switch (wParam) {
         case _3RVX::MSG_ACTIVATE:
@@ -218,8 +193,13 @@ LRESULT SettingsUI::WndProc(
             }
             Settings::Instance()->Save();
 
-            CLOG(L"Notifying 3RVX process of settings change");
-            _3RVX::Message(_3RVX::MSG_LOAD, NULL, true);
+            if (lParam == PSBTN_APPLYNOW && relaunch == false) {
+                CLOG(L"Scheduling delayed 3RVX settings reload");
+                SetTimer(hWnd, IDT_RELOAD_3RVX, RELOAD_3RVX_DELAY_MS, NULL);
+            } else {
+                CLOG(L"Notifying 3RVX process of settings change");
+                _3RVX::Message(_3RVX::MSG_LOAD, NULL, true);
+            }
             break;
         }
     }
@@ -263,7 +243,7 @@ int CALLBACK PropSheetProc(HWND hwndDlg, UINT uMsg, LPARAM lParam) {
             HWND hApply = GetDlgItem(hwndDlg, IDD_APPLYNOW);
             if (IsWindowEnabled(hApply)) {
                 /* Save settings*/
-                _3RVX::SettingsMessage(_3RVX::MSG_SAVESETTINGS, NULL);
+                _3RVX::SettingsMessage(_3RVX::MSG_SAVESETTINGS, lParam);
 
                 if (lParam == PSBTN_APPLYNOW && relaunch == true) {
                     /* Language was changed, or some other setting that requires

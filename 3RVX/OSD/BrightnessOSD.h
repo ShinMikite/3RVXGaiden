@@ -21,6 +21,8 @@ private:
     MeterWnd _mWnd;
     BrightnessController *_brightnessCtrl;
 
+    bool EnsureBrightnessController();
+
     virtual void OnDisplayChange();
 
     virtual LRESULT WndProc(HWND hWnd, UINT message,

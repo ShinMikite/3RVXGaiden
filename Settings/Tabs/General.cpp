@@ -13,8 +13,6 @@
 #include "../../3RVX/Settings.h"
 #include "../../3RVX/Skin/SkinInfo.h"
 #include "../resource.h"
-#include "../Updater/ProgressWindow.h"
-#include "../Updater/Updater.h"
 
 const wchar_t General::REGKEY_NAME[] = L"3RVX";
 const wchar_t General::REGKEY_RUN[]
@@ -25,9 +23,6 @@ void General::Initialize() {
     _startup = new Checkbox(CHK_STARTUP, *this);
     _showStartup = new Checkbox(CHK_SHOWSTARTUP, *this);
     _sounds = new Checkbox(CHK_SOUNDS, *this);
-    _autoUpdate = new Checkbox(CHK_AUTOUPDATE, *this);
-    _checkNow = new Button(BTN_CHECK, *this);
-    _checkNow->OnClick = std::bind(&General::CheckForUpdates, this);
 
     _skinGroup = new GroupBox(GRP_SKIN, *this);
     _skin = new ComboBox(CMB_SKIN, *this);
@@ -55,7 +50,6 @@ void General::LoadSettings() {
     _startup->Checked(RunOnStartup());
     _showStartup->Checked(settings->ShowOnStartup());
     _sounds->Checked(settings->SoundEffectsEnabled());
-    _autoUpdate->Checked(settings->AutomaticUpdates());
 
     /* Determine which skins are available */
     std::list<std::wstring> skins = FindSkins(Settings::SkinDir().c_str());
@@ -93,7 +87,6 @@ void General::SaveSettings() {
     RunOnStartup(_startup->Checked());
     settings->ShowOnStartup(_showStartup->Checked());
     settings->SoundEffectsEnabled(_sounds->Checked());
-    settings->AutomaticUpdates(_autoUpdate->Checked());
 
     settings->CurrentSkin(_skin->Selection());
 
@@ -217,59 +210,4 @@ std::list<std::wstring> General::FindLanguages(std::wstring dir) {
     FindClose(hFind);
 
     return languages;
-}
-
-bool General::CheckForUpdates() {
-    _checkNow->Enabled(false);
-    HCURSOR waitCursor = LoadCursor(NULL, IDC_WAIT);
-    if (waitCursor) {
-        SetCursor(waitCursor);
-    }
-
-    Version local = Updater::MainAppVersion();
-    Version remote = Updater::RemoteVersion();
-
-    if (remote.ToInt() == 0) {
-        /* If the remote version is 0, there must've been a connection error. */
-        Error::ErrorMessage(Error::GENERR_UPDATEDL,
-            L"Update server appears to be offline.");
-        goto cleanup;
-    }
-
-    if (remote.NewerThan(local)) {
-        Settings *settings = Settings::Instance();
-        LanguageTranslator *translator = settings->Translator();
-
-        int msgResult = MessageBox(
-            DialogHandle(),
-            translator->TranslateAndReplace(
-                L"A new version of 3RVX ({1}) is available. Install now?",
-                remote.ToString()).c_str(),
-            translator->Translate(L"Update Available").c_str(),
-            MB_YESNO | MB_ICONQUESTION);
-
-        if (msgResult == IDYES) {
-            ProgressWindow pw(TabPage::DialogHandle(), remote);
-            INT_PTR result = pw.Show();
-            if (result == 0) {
-                /* Everything went file. Shut down the settings app. */
-                SendMessage(_3RVX::MasterSettingsHwnd(), WM_CLOSE, 0, 0);
-            }
-        }
-
-    } else {
-        MessageBox(
-            DialogHandle(),
-            L"Your copy of 3RVX is up-to-date.",
-            L"Update Check",
-            MB_OK | MB_ICONINFORMATION);
-    }
-
-cleanup:
-    HCURSOR arrowCursor = LoadCursor(NULL, IDC_ARROW);
-    if (arrowCursor) {
-        SetCursor(arrowCursor);
-    }
-    _checkNow->Enabled(true);
-    return true;
 }

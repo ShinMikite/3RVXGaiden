@@ -29,15 +29,23 @@ DDCBrightnessController::DDCBrightnessController(HMONITOR monitor) {
         if (supportsAPI) {
             /* For now, we use the first compatible monitor found. */
             _monitorHandle = monitors[i].hPhysicalMonitor;
+            _useBrightnessAPI = true;
             break;
         }
     }
     delete[] monitors;
 
+    if (_monitorHandle == NULL) {
+        CLOG(L"No compatible monitor brightness API found");
+        return;
+    }
+
     DWORD min, cur, max;
     result = GetMonitorBrightness(_monitorHandle, &min, &cur, &max);
     if (result == 0) {
         Logger::LogLastError();
+        _useBrightnessAPI = false;
+        return;
     }
     _minBrightness = min;
     _maxBrightness = max;
@@ -49,15 +57,35 @@ DDCBrightnessController(monitor.Handle()) {
 
 }
 
+DDCBrightnessController::~DDCBrightnessController() {
+    if (_monitorHandle != NULL) {
+        DestroyPhysicalMonitor(_monitorHandle);
+    }
+}
+
 float DDCBrightnessController::Brightness() {
+    if (!_useBrightnessAPI || _monitorHandle == NULL) {
+        return 0.0f;
+    }
+
     DWORD min, cur, max;
-    GetMonitorBrightness(_monitorHandle, &min, &cur, &max);
+    if (GetMonitorBrightness(_monitorHandle, &min, &cur, &max) == FALSE) {
+        Logger::LogLastError();
+        return 0.0f;
+    }
+
     return (float) (cur - _minBrightness) / (_maxBrightness - _minBrightness);
 }
 
 void DDCBrightnessController::Brightness(float level) {
+    if (!_useBrightnessAPI || _monitorHandle == NULL) {
+        return;
+    }
+
     DWORD setLevel = (DWORD) ((_maxBrightness - _minBrightness) * level);
-    SetMonitorBrightness(_monitorHandle, setLevel);
+    if (SetMonitorBrightness(_monitorHandle, setLevel) == FALSE) {
+        Logger::LogLastError();
+    }
 }
 
 bool DDCBrightnessController::SupportsBrightnessAPI(PHYSICAL_MONITOR &pm) {
