@@ -7,7 +7,8 @@
 
 AccentColor *AccentColor::instance = nullptr;
 
-AccentColor::AccentColor() {
+AccentColor::AccentColor() :
+_dwmLib(nullptr) {
     Refresh();
 }
 
@@ -42,6 +43,12 @@ void AccentColor::Refresh() {
         return;
     }
 
+    INT64 registryColor = RegistryAccentColor();
+    if (registryColor >= 0) {
+        _color = (UINT32) registryColor;
+        return;
+    }
+
     if (IsWindows7OrGreater()) {
         if (_useUndocumented == true) {
             INT64 color = ColorizationParamColor();
@@ -63,7 +70,52 @@ void AccentColor::Refresh() {
 
     /* Our last hope if both methods above failed: */
     DWORD caption = GetSysColor(COLOR_ACTIVECAPTION);
-    _color = caption;
+    _color = ColorRefToArgb(caption);
+}
+
+INT64 AccentColor::RegistryAccentColor() {
+    HKEY key = NULL;
+    LONG result = RegOpenKeyEx(
+        HKEY_CURRENT_USER,
+        L"Software\\Microsoft\\Windows\\DWM",
+        0,
+        KEY_READ,
+        &key);
+    if (result != ERROR_SUCCESS) {
+        return -1;
+    }
+
+    DWORD color = 0;
+    DWORD type = REG_DWORD;
+    DWORD size = sizeof(color);
+    result = RegQueryValueEx(
+        key,
+        L"AccentColor",
+        NULL,
+        &type,
+        reinterpret_cast<LPBYTE>(&color),
+        &size);
+    RegCloseKey(key);
+
+    if (result != ERROR_SUCCESS || type != REG_DWORD) {
+        return -1;
+    }
+
+    return (INT64) AbgrToArgb(color);
+}
+
+UINT32 AccentColor::AbgrToArgb(DWORD color) {
+    UINT32 red = color & 0x000000FF;
+    UINT32 green = (color & 0x0000FF00);
+    UINT32 blue = (color & 0x00FF0000) >> 16;
+    return 0xFF000000 | (red << 16) | green | blue;
+}
+
+UINT32 AccentColor::ColorRefToArgb(DWORD color) {
+    UINT32 red = color & 0x000000FF;
+    UINT32 green = (color & 0x0000FF00);
+    UINT32 blue = (color & 0x00FF0000) >> 16;
+    return 0xFF000000 | (red << 16) | green | blue;
 }
 
 /* WARNING: This method uses an undocumented API. May crash in the future. */

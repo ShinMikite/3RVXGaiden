@@ -222,10 +222,18 @@ void VolumeOSD::Show(bool mute) {
     }
 
     if (mute) {
-        _muteWnd.Show();
+        bool switching = _mWnd.Visible();
+        if (!InitMeterWnd(_muteWnd)) {
+            return;
+        }
+        _muteWnd.Show(!switching);
         _mWnd.Hide(false);
     } else {
-        _mWnd.Show();
+        bool switching = _muteWnd.Visible();
+        if (!InitMeterWnd(_mWnd)) {
+            return;
+        }
+        _mWnd.Show(!switching);
         _muteWnd.Hide(false);
     }
 }

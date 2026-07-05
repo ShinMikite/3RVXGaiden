@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <settings>
-  <skin>Yosemitesque</skin>
+  <skin>OEM</skin>
   <language>English</language>
 
   <audioDeviceID></audioDeviceID>
@@ -10,9 +10,9 @@
   <onTop>true</onTop>
   <hideFullscreen>true</hideFullscreen>
 
-  <hideAnimation>Fade</hideAnimation>
-  <hideDelay>800</hideDelay>
-  <hideSpeed>765</hideSpeed>
+  <hideAnimation>Slide</hideAnimation>
+  <hideDelay>2000</hideDelay>
+  <hideSpeed>200</hideSpeed>
 
   <osdPosition>Bottom</osdPosition>
   <osdEdgeOffset>140</osdEdgeOffset>

@@ -63,6 +63,8 @@ public:
     /* Display */
     bool AlwaysOnTop();
     void AlwaysOnTop(bool enable);
+    bool AvoidPrimaryMonitor();
+    void AvoidPrimaryMonitor(bool enable);
     bool HideFullscreen();
     void HideFullscreen(bool enable);
     bool HideDirectX();
@@ -205,6 +207,7 @@ private:
     static constexpr const char *XML_ENABLE_VOSD = "volumeOSDEnabled";
     static constexpr const char *XML_HIDE_WHENFULL = "hideFullscreen";
     static constexpr const char *XML_HIDE_DIRECTX = "hideDirectX";
+    static constexpr const char *XML_AVOID_PRIMARY = "avoidPrimaryMonitor";
     static constexpr const char *XML_HIDEANIM = "hideAnimation";
     static constexpr const char *XML_HIDETIME = "hideDelay";
     static constexpr const char *XML_HIDESPEED = "hideSpeed";

@@ -3,6 +3,7 @@
 
 #include "Display.h"
 
+#include <algorithm>
 #include <CommCtrl.h>
 
 #include "../../3RVX/DefaultSettings.h"
@@ -19,6 +20,7 @@ void Display::Initialize() {
     _onTop = new Checkbox(CHK_ONTOP, *this);
     _hideFullscreen = new Checkbox(CHK_FULLSCREEN, *this);
     _hideDirectX = new Checkbox(CHK_DIRECTX, *this);
+    _avoidPrimary = new Checkbox(CHK_AVOIDPRIMARY, *this);
 
     _positionGroup = new GroupBox(GRP_POSITION, *this);
     _position = new ComboBox(CMB_POSITION, *this);
@@ -58,12 +60,14 @@ void Display::LoadSettings() {
     _allMonitorStr = translator->Translate(_allMonitorStr);
     _primaryMonitorStr = translator->Translate(_primaryMonitorStr);
     _customPositionStr = translator->Translate(_customPositionStr);
+    _disconnectedMonitorStr = translator->Translate(_disconnectedMonitorStr);
     _noAnimStr = translator->Translate(_noAnimStr);
 
     /* Visibility Settings */
     _onTop->Checked(settings->AlwaysOnTop());
     _hideFullscreen->Checked(settings->HideFullscreen());
     _hideDirectX->Checked(settings->HideDirectX());
+    _avoidPrimary->Checked(settings->AvoidPrimaryMonitor());
 
     /* Position on Screen*/
     for (std::wstring position : settings->OSDPosNames) {
@@ -80,20 +84,50 @@ void Display::LoadSettings() {
     _edgeSpinner->Range(MIN_EDGE, MAX_EDGE);
 
     /* Display Devices */
-    _displayDevice->AddItem(_primaryMonitorStr);
-    _displayDevice->AddItem(_allMonitorStr);
-    std::list<DISPLAY_DEVICE> devices = DisplayManager::ListAllDevices();
-    for (DISPLAY_DEVICE dev : devices) {
-        std::wstring devString(dev.DeviceName);
-        _displayDevice->AddItem(devString);
+    _monitorIds.clear();
+    AddMonitorOption(_primaryMonitorStr, L"");
+    AddMonitorOption(_allMonitorStr, L"*");
+
+    DisplayManager::UpdateMonitorMap();
+    std::unordered_map<std::wstring, Monitor> monitors
+        = DisplayManager::MonitorMap();
+    for (auto it = monitors.begin(); it != monitors.end(); ++it) {
+        std::wstring label = it->second.DisplayName();
+        std::vector<std::wstring> monitorLabels = _displayDevice->Items();
+        if (std::find(monitorLabels.begin(), monitorLabels.end(), label)
+                != monitorLabels.end()) {
+            label += L" (" + it->second.DeviceName() + L")";
+        }
+        AddMonitorOption(label, it->first);
     }
+
     std::wstring monitorName = settings->Monitor();
-    if (monitorName == L"") {
-        monitorName = _primaryMonitorStr;
-    } else if (monitorName == L"*") {
-        monitorName = _allMonitorStr;
+    int selectedIdx = 0;
+    for (unsigned int i = 0; i < _monitorIds.size(); ++i) {
+        if (monitorName == _monitorIds[i]) {
+            selectedIdx = i;
+            break;
+        }
     }
-    _displayDevice->Select(monitorName);
+    if (selectedIdx == 0 && monitorName == L"*") {
+        selectedIdx = 1;
+    }
+    if (selectedIdx == 0 && monitorName != L"") {
+        for (unsigned int i = 0; i < _monitorIds.size(); ++i) {
+            std::unordered_map<std::wstring, Monitor>::iterator found
+                = monitors.find(_monitorIds[i]);
+            if (found != monitors.end()
+                    && monitorName == found->second.DeviceName()) {
+                selectedIdx = i;
+                break;
+            }
+        }
+    }
+    if (selectedIdx == 0 && monitorName != L"") {
+        AddMonitorOption(_disconnectedMonitorStr, monitorName);
+        selectedIdx = _displayDevice->Count() - 1;
+    }
+    _displayDevice->Select(selectedIdx);
 
     /* Animation Settings */
     for (std::wstring anim : AnimationTypes::HideAnimationNames) {
@@ -118,6 +152,7 @@ void Display::SaveSettings() {
     settings->AlwaysOnTop(_onTop->Checked());
     settings->HideFullscreen(_hideFullscreen->Checked());
     settings->HideDirectX(_hideDirectX->Checked());
+    settings->AvoidPrimaryMonitor(_avoidPrimary->Checked());
 
     Settings::OSDPos pos = (Settings::OSDPos) _position->SelectionIndex();
     settings->OSDPosition(pos);
@@ -134,12 +169,10 @@ void Display::SaveSettings() {
         settings->OSDEdgeOffset(DefaultSettings::OSDOffset);
     }
 
-    std::wstring monitor = _displayDevice->Selection();
     int monitorIdx = _displayDevice->SelectionIndex();
-    if (monitorIdx == 0) {
-        monitor = L"";
-    } else if (monitorIdx == 1) {
-        monitor = L"*";
+    std::wstring monitor = L"";
+    if (monitorIdx >= 0 && monitorIdx < (int) _monitorIds.size()) {
+        monitor = _monitorIds[monitorIdx];
     }
     settings->Monitor(monitor);
 
@@ -173,4 +206,9 @@ bool Display::OnPositionChange() {
     _positionX->Enabled(isCustom);
     _positionY->Enabled(isCustom);
     return true;
+}
+
+void Display::AddMonitorOption(std::wstring label, std::wstring monitorId) {
+    _displayDevice->AddItem(label);
+    _monitorIds.push_back(monitorId);
 }

@@ -85,4 +85,13 @@ private:
     /// An integer representing the DWM accent color, or -1 if a failure occurs.
     /// </returns>
     INT64 ColorizationParamColor();
+
+    /// <summary>
+    /// Retrieves the accent color Windows stores for modern shell UI. The
+    /// registry value is ABGR, so it must be converted before GDI+ uses it.
+    /// </summary>
+    INT64 RegistryAccentColor();
+
+    static UINT32 AbgrToArgb(DWORD color);
+    static UINT32 ColorRefToArgb(DWORD color);
 };

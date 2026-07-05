@@ -12,6 +12,12 @@
 #include <dshow.h>
 
 SoundPlayer::SoundPlayer(std::wstring filePath, int repeatLimit) :
+_graphBuilder(nullptr),
+_mediaCtrl(nullptr),
+_mediaEv(nullptr),
+_mediaSeek(nullptr),
+_ready(false),
+_repeat(0),
 _repeatLimit(repeatLimit) {
 
     HRESULT hr;
@@ -25,6 +31,7 @@ _repeatLimit(repeatLimit) {
 
     if (FAILED(hr)) {
         CLOG(L"Failed to create GraphBuilder");
+        return;
     }
     
     hr = _graphBuilder->QueryInterface(
@@ -57,7 +64,9 @@ _repeatLimit(repeatLimit) {
 SoundPlayer::~SoundPlayer() {
     _ready = false;
     _cv.notify_all();
-    _thread.join();
+    if (_thread.joinable()) {
+        _thread.join();
+    }
 
     COMUtil::SafeRelease(_mediaSeek);
     COMUtil::SafeRelease(_mediaEv);

@@ -6,6 +6,7 @@
 #include "SettingsTab.h"
 
 #include <CommCtrl.h>
+#include <vector>
 
 class Display : public SettingsTab {
 public:
@@ -25,6 +26,7 @@ private:
     bool OnAnimationSpin(NMUPDOWN *ud);
     bool OnCustomCheckChange();
     bool OnPositionChange();
+    void AddMonitorOption(std::wstring label, std::wstring monitorId);
 
 private:
     /* Controls: */
@@ -32,6 +34,7 @@ private:
     Checkbox *_onTop;
     Checkbox *_hideFullscreen;
     Checkbox *_hideDirectX;
+    Checkbox *_avoidPrimary;
 
     GroupBox *_positionGroup;
     ComboBox *_position;
@@ -56,7 +59,9 @@ private:
     std::wstring _allMonitorStr = L"All Monitors";
     std::wstring _primaryMonitorStr = L"Primary Monitor";
     std::wstring _customPositionStr = L"Custom";
+    std::wstring _disconnectedMonitorStr = L"Saved Monitor (not connected)";
     std::wstring _noAnimStr = L"None";
+    std::vector<std::wstring> _monitorIds;
 
 private:
     /* Constants: */

@@ -91,6 +91,9 @@ bool MeterWnd::EnableGlass(Gdiplus::Bitmap *mask) {
 }
 
 void MeterWnd::Show(bool animate) {
+    bool wasVisible = _visible;
+    bool animateIn = false;
+
     if (_visible == false) {
         UpdateWindowPosition();
 
@@ -109,8 +112,20 @@ void MeterWnd::Show(bool animate) {
 
 
         if (disabled == false) {
+            animateIn = animate
+                && _hideAnimation
+                && _hideAnimation->HasAnimateIn();
+            if (animateIn) {
+                _hideAnimation->PrepareShow(this);
+            }
+
             ShowWindow(Window::Handle(), SW_SHOW);
             _visible = true;
+
+            if (animateIn) {
+                SetTimer(Window::Handle(),
+                    TIMER_IN, _hideAnimation->UpdateInterval(), NULL);
+            }
         }
     }
 
@@ -120,7 +135,7 @@ void MeterWnd::Show(bool animate) {
         SetTimer(Window::Handle(), TIMER_HIDE, _visibleDuration, NULL);
         KillTimer(Window::Handle(), TIMER_OUT);
 
-        if (_hideAnimation) {
+        if (_hideAnimation && (wasVisible || !animateIn)) {
             _hideAnimation->Reset(this);
         }
     }
@@ -132,12 +147,22 @@ void MeterWnd::Hide(bool animate) {
     }
 
     if (animate && _hideAnimation) {
+        KillTimer(Window::Handle(), TIMER_IN);
+        _hideAnimation->Reset(this);
         SetTimer(Window::Handle(),
             TIMER_OUT, _hideAnimation->UpdateInterval(), NULL);
     } else {
         ShowWindow(Window::Handle(), SW_HIDE);
         _visible = false;
         HideClones();
+    }
+}
+
+void MeterWnd::AnimateIn() {
+    bool animOver = _hideAnimation->AnimateIn(this);
+    if (animOver) {
+        CLOG(L"Finished show animation.");
+        KillTimer(Window::Handle(), TIMER_IN);
     }
 }
 
@@ -253,8 +278,13 @@ LRESULT MeterWnd::WndProc(
         case TIMER_OUT:
             AnimateOut();
             break;
+
+        case TIMER_IN:
+            AnimateIn();
+            break;
         }
-    } else if (message == WM_DWMCOLORIZATIONCOLORCHANGED) {
+    } else if (message == WM_DWMCOLORIZATIONCOLORCHANGED
+            || message == WM_SETTINGCHANGE) {
         CLOG(L"updating meter color maps");
         AccentColor::Instance()->Refresh();
         UINT32 color = AccentColor::Instance()->Color();
@@ -267,4 +297,3 @@ LRESULT MeterWnd::WndProc(
 
     return LayeredWnd::WndProc(hWnd, message, wParam, lParam);
 }
-

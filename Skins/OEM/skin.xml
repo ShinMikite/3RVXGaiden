@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<skin>
+  <info>
+    <author>ShinMikite</author>
+    <website></website>
+  </info>
+
+  <osds>
+    <volume background="OSD\background.png" defaultUnits="50">
+      <meter type="Bitstrip" image="OSD\speaker.png"
+             x="14" y="14" units="100"/>
+      <meter type="HorizontalBar" image="OSD\meter.png"
+             x="43" y="22" units="50"
+             colorTransform="FF00FF"
+             colorTransformTransparency="255"/>
+      <meter type="Text" format="[[PERC]]"
+             font="Segoe UI" size="11" color="FFFFFF"
+             transparency="255" align="center" x="156" y="14"
+             width="28" height="22"/>
+    </volume>
+
+    <mute background="OSD\mute.png"/>
+
+    <brightness background="OSD\brightness.png" defaultUnits="50">
+      <meter type="HorizontalBar" image="OSD\meter.png"
+             x="43" y="22" units="50"
+             colorTransform="FF00FF"
+             colorTransformTransparency="255"/>
+      <meter type="Text" format="[[PERC]]"
+             font="Segoe UI" size="11" color="FFFFFF"
+             transparency="255" align="center" x="156" y="14"
+             width="28" height="22"/>
+    </brightness>
+  </osds>
+</skin>

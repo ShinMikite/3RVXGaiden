@@ -256,6 +256,15 @@ void Settings::AlwaysOnTop(bool enable) {
     SetEnabled(XML_ONTOP, enable);
 }
 
+bool Settings::AvoidPrimaryMonitor() {
+    return GetEnabled(
+        XML_AVOID_PRIMARY, DefaultSettings::AvoidPrimaryMonitor);
+}
+
+void Settings::AvoidPrimaryMonitor(bool enable) {
+    SetEnabled(XML_AVOID_PRIMARY, enable);
+}
+
 bool Settings::HideFullscreen() {
     return GetEnabled(XML_HIDE_WHENFULL, DefaultSettings::HideFullscreen);
 }

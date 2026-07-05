@@ -13,7 +13,10 @@ public:
     }
 
     virtual bool Animate(MeterWnd *meterWnd) = 0;
+    virtual bool AnimateIn(MeterWnd *meterWnd) { return true; }
     virtual void Reset(MeterWnd *meterWnd) = 0;
+    virtual void PrepareShow(MeterWnd *meterWnd) { Reset(meterWnd); }
+    virtual bool HasAnimateIn() { return false; }
 
     virtual int UpdateInterval() = 0;
 

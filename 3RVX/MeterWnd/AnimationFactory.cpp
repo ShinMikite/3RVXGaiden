@@ -3,6 +3,9 @@
 
 #include "AnimationFactory.h"
 
+#include "Animations\FadeOut.h"
+#include "Animations\SlideOut.h"
+
 Animation *AnimationFactory::Create(
         AnimationTypes::HideAnimation anim, int speed) {
 
@@ -11,6 +14,10 @@ Animation *AnimationFactory::Create(
     switch (anim) {
     case AnimationTypes::Fade:
         animation = new FadeOut(speed);
+        break;
+
+    case AnimationTypes::Slide:
+        animation = new SlideOut(speed);
         break;
 
     case AnimationTypes::None:

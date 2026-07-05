@@ -3,11 +3,124 @@
 
 #include "DisplayManager.h"
 
+#include <algorithm>
 #include <d3d9.h>
+#include <vector>
 #pragma comment(lib, "d3d9.lib")
 #include "Logger.h"
 
 static std::unordered_map<std::wstring, Monitor> monitorMap;
+
+static std::wstring BoundedDisplayString(const wchar_t *text, size_t maxLength) {
+    return std::wstring(text, wcsnlen_s(text, maxLength));
+}
+
+static std::wstring TrimDisplayString(std::wstring text) {
+    const wchar_t *trimChars = L" \t\r\n";
+    size_t first = text.find_first_not_of(trimChars);
+    if (first == std::wstring::npos) {
+        return L"";
+    }
+
+    size_t last = text.find_last_not_of(trimChars);
+    return text.substr(first, last - first + 1);
+}
+
+static std::wstring MonitorRegistryInstance(std::wstring deviceId) {
+    std::wstring id = deviceId;
+
+    size_t displayPath = id.find(L"DISPLAY#");
+    if (displayPath != std::wstring::npos) {
+        id = id.substr(displayPath + 8);
+        size_t classGuid = id.find(L"#{");
+        if (classGuid != std::wstring::npos) {
+            id = id.substr(0, classGuid);
+        }
+        std::replace(id.begin(), id.end(), L'#', L'\\');
+        return id;
+    }
+
+    displayPath = id.find(L"DISPLAY\\");
+    if (displayPath != std::wstring::npos) {
+        id = id.substr(displayPath + 8);
+    }
+
+    size_t suffix = id.rfind(L"_0");
+    if (suffix != std::wstring::npos && suffix == id.length() - 2) {
+        id = id.substr(0, suffix);
+    }
+
+    return id;
+}
+
+static std::wstring EdidMonitorName(const std::vector<BYTE> &edid) {
+    if (edid.size() < 128) {
+        return L"";
+    }
+
+    for (size_t offset = 54; offset + 18 <= edid.size(); offset += 18) {
+        bool descriptor = edid[offset] == 0x00
+            && edid[offset + 1] == 0x00
+            && edid[offset + 2] == 0x00;
+        BYTE tag = edid[offset + 3];
+        if (!descriptor || (tag != 0xFC && tag != 0xFE)) {
+            continue;
+        }
+
+        std::wstring name;
+        for (size_t i = offset + 5; i < offset + 18; ++i) {
+            BYTE ch = edid[i];
+            if (ch == 0x00 || ch == 0x0A || ch == 0x0D) {
+                break;
+            }
+            if (ch >= 0x20) {
+                name.push_back((wchar_t) ch);
+            }
+        }
+
+        name = TrimDisplayString(name);
+        if (!name.empty()) {
+            return name;
+        }
+    }
+
+    return L"";
+}
+
+static std::wstring RegistryMonitorName(std::wstring deviceId) {
+    std::wstring instance = MonitorRegistryInstance(deviceId);
+    if (instance.empty()) {
+        return L"";
+    }
+
+    std::wstring keyPath = L"SYSTEM\\CurrentControlSet\\Enum\\DISPLAY\\"
+        + instance + L"\\Device Parameters";
+    HKEY key = NULL;
+    LONG result = RegOpenKeyEx(
+        HKEY_LOCAL_MACHINE, keyPath.c_str(), 0, KEY_READ, &key);
+    if (result != ERROR_SUCCESS) {
+        return L"";
+    }
+
+    DWORD type = REG_BINARY;
+    DWORD size = 0;
+    result = RegQueryValueEx(
+        key, L"EDID", NULL, &type, NULL, &size);
+    if (result != ERROR_SUCCESS || type != REG_BINARY || size == 0) {
+        RegCloseKey(key);
+        return L"";
+    }
+
+    std::vector<BYTE> edid(size);
+    result = RegQueryValueEx(
+        key, L"EDID", NULL, &type, edid.data(), &size);
+    RegCloseKey(key);
+    if (result != ERROR_SUCCESS || type != REG_BINARY) {
+        return L"";
+    }
+
+    return EdidMonitorName(edid);
+}
 
 std::unordered_map<std::wstring, Monitor> &DisplayManager::MonitorMap() {
     return monitorMap;
@@ -151,9 +264,34 @@ BOOL CALLBACK DisplayManager::MonitorEnumProc(
     mInfo.cbSize = sizeof(MONITORINFOEX);
     GetMonitorInfo(hMonitor, &mInfo);
 
-    std::wstring monitorName = std::wstring(mInfo.szDevice);
-    Monitor mon(hMonitor, monitorName, mInfo.rcMonitor);
-    monitorMap[monitorName] = mon;
+    std::wstring deviceName = std::wstring(mInfo.szDevice);
+    std::wstring monitorId = deviceName;
+    std::wstring displayName = deviceName;
+
+    DISPLAY_DEVICE monitorDevice = {};
+    monitorDevice.cb = sizeof(DISPLAY_DEVICE);
+    if (EnumDisplayDevices(
+            mInfo.szDevice, 0, &monitorDevice, EDD_GET_DEVICE_INTERFACE_NAME)) {
+        std::wstring deviceId = BoundedDisplayString(
+            monitorDevice.DeviceID, ARRAYSIZE(monitorDevice.DeviceID));
+        if (deviceId.length() > 0) {
+            monitorId = deviceId;
+        }
+
+        std::wstring deviceString = BoundedDisplayString(
+            monitorDevice.DeviceString, ARRAYSIZE(monitorDevice.DeviceString));
+        if (deviceString.length() > 0) {
+            displayName = deviceString;
+        }
+
+        std::wstring registryName = RegistryMonitorName(deviceId);
+        if (registryName.length() > 0) {
+            displayName = registryName;
+        }
+    }
+
+    Monitor mon(hMonitor, monitorId, displayName, deviceName, mInfo.rcMonitor);
+    monitorMap[monitorId] = mon;
 
     return TRUE;
 }

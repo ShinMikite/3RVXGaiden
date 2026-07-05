@@ -10,7 +10,7 @@ class DefaultSettings {
 public:
     /* String Constants*/
     static constexpr const wchar_t *Language = L"English";
-    static constexpr const wchar_t *Skin = L"Classic";
+    static constexpr const wchar_t *Skin = L"OEM";
     static constexpr const wchar_t *MainAppName = L"3RVX.exe";
     static constexpr const wchar_t *SettingsAppName = L"Settings.exe";
     static constexpr const wchar_t *SettingsFileName = L"Settings.xml";
@@ -33,12 +33,13 @@ public:
     static const bool VolumeIcon = true;
 
     static const bool OnTop = true;
+    static const bool AvoidPrimaryMonitor = true;
     static const bool HideFullscreen = false;
     static const bool HideDirectX = false;
     static const AnimationTypes::HideAnimation DefaultHideAnim
-        = AnimationTypes::Fade;
+        = AnimationTypes::Slide;
     static const int HideSpeed = 765;
-    static const int HideTime = 800;
+    static const int HideTime = 2000;
     static constexpr const float VolumeLimit = 1.0f;
     static const bool ShowOnStartup = true;
     static const bool SoundsEnabled = true;

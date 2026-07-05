@@ -43,9 +43,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
             ReleaseMutex(mutex);
         }
 
-        CLOG(L"A previous instance of the program is already running.\n"
-            L"Requesting Settings dialog.");
-        _3RVX::Message(_3RVX::MSG_SETTINGS, NULL);
+        CLOG(L"A previous instance of the program is already running.");
 
 #if defined(ENABLE_3RVX_LOG) && (defined(ENABLE_3RVX_LOGTOFILE) == FALSE)
         CLOG(L"Press [enter] to terminate");

@@ -36,7 +36,7 @@ protected:
 
     void HideOthers(OSDType except);
 
-    void InitMeterWnd(MeterWnd &mWnd);
+    bool InitMeterWnd(MeterWnd &mWnd);
 
     std::vector<Monitor> ActiveMonitors();
     void PositionWindow(Monitor monitor, LayeredWnd &lWnd);

@@ -93,4 +93,7 @@ private:
 
     /// <summary> Timer ID used to animate the window as it is hidden.</summary>
     static const int TIMER_OUT = 101;
+
+    /// <summary> Timer ID used to animate the window as it is shown.</summary>
+    static const int TIMER_IN = 102;
 };

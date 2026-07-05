@@ -11,6 +11,24 @@
 #include "..\HotkeyInfo.h"
 #include "..\Monitor.h"
 
+static bool IsPrimaryMonitor(Monitor monitor) {
+    const POINT p = { 0, 0 };
+    return monitor.Handle() == MonitorFromPoint(p, MONITOR_DEFAULTTOPRIMARY);
+}
+
+static bool AddNonPrimaryMonitor(std::vector<Monitor> &monitors) {
+    std::unordered_map<std::wstring, Monitor> map = DisplayManager::MonitorMap();
+    for (auto it = map.begin(); it != map.end(); ++it) {
+        if (!IsPrimaryMonitor(it->second)) {
+            CLOG(L"Monitor: %s", it->second.DisplayName().c_str());
+            monitors.push_back(it->second);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 OSD::OSD(LPCWSTR className, HINSTANCE hInstance) :
 Window(className, className, hInstance),
 _settings(Settings::Instance()),
@@ -30,7 +48,7 @@ void OSD::HideOthers(OSDType except = All) {
     SendMessage(_masterWnd, _3RVX::WM_3RVX_CTRL, _3RVX::MSG_HIDEOSD, except);
 }
 
-void OSD::InitMeterWnd(MeterWnd &mWnd) {
+bool OSD::InitMeterWnd(MeterWnd &mWnd) {
     mWnd.AlwaysOnTop(_settings->AlwaysOnTop());
     mWnd.HideAnimation(_settings->HideAnim(), _settings->HideSpeed());
     mWnd.VisibleDuration(_settings->HideDelay());
@@ -39,7 +57,13 @@ void OSD::InitMeterWnd(MeterWnd &mWnd) {
     mWnd.NoShowD3DOccluded(_settings->HideDirectX());
 
     mWnd.DeleteClones();
+    DisplayManager::UpdateMonitorMap();
     std::vector<Monitor> monitors = ActiveMonitors();
+    if (monitors.size() == 0) {
+        CLOG(L"No active monitors available for OSD positioning.");
+        return false;
+    }
+
     for (unsigned int i = 1; i < monitors.size(); ++i) {
         mWnd.Clone();
     }
@@ -49,6 +73,8 @@ void OSD::InitMeterWnd(MeterWnd &mWnd) {
     for (unsigned int i = 1; i < monitors.size(); ++i) {
         PositionWindow(monitors[i], *clones[i - 1]);
     }
+
+    return true;
 }
 
 std::vector<Monitor> OSD::ActiveMonitors() {
@@ -57,8 +83,14 @@ std::vector<Monitor> OSD::ActiveMonitors() {
 
     if (monitorStr == L"") {
         /* Primary Monitor */
-        monitors.push_back(DisplayManager::Primary());
-        CLOG(L"Monitor: (Primary)");
+        if (_settings->AvoidPrimaryMonitor()) {
+            if (!AddNonPrimaryMonitor(monitors)) {
+                CLOG(L"No non-primary monitor available for OSD positioning.");
+            }
+        } else {
+            monitors.push_back(DisplayManager::Primary());
+            CLOG(L"Monitor: (Primary)");
+        }
 
     } else if (monitorStr == L"*") {
         /* All Monitors */
@@ -66,7 +98,7 @@ std::vector<Monitor> OSD::ActiveMonitors() {
             = DisplayManager::MonitorMap();
 
         for (auto it = map.begin(); it != map.end(); ++it) {
-            CLOG(L"Monitor: %s", it->first.c_str());
+            CLOG(L"Monitor: %s", it->second.DisplayName().c_str());
             monitors.push_back(it->second);
         }
     } else {
@@ -75,10 +107,23 @@ std::vector<Monitor> OSD::ActiveMonitors() {
             = DisplayManager::MonitorMap();
 
         for (auto it = map.begin(); it != map.end(); ++it) {
-            if (monitorStr == it->first) {
-                CLOG(L"Monitor: %s", it->first.c_str());
+            if (monitorStr == it->first
+                    || monitorStr == it->second.DeviceName()) {
+                CLOG(L"Monitor: %s", it->second.DisplayName().c_str());
                 monitors.push_back(it->second);
                 break;
+            }
+        }
+
+        if (monitors.size() == 0) {
+            CLOG(L"Configured monitor is not connected.");
+            if (_settings->AvoidPrimaryMonitor()) {
+                if (!AddNonPrimaryMonitor(monitors)) {
+                    CLOG(L"No non-primary fallback monitor available.");
+                }
+            } else {
+                CLOG(L"Using primary monitor temporarily.");
+                monitors.push_back(DisplayManager::Primary());
             }
         }
     }

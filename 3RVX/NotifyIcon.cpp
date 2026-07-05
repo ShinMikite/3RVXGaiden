@@ -7,6 +7,11 @@
 
 int NotifyIcon::ids = 0;
 
+template <size_t N>
+static void CopyShellString(wchar_t (&dest)[N], const std::wstring &source) {
+    wcsncpy_s(dest, source.c_str(), _TRUNCATE);
+}
+
 NotifyIcon::NotifyIcon(HWND hWnd, std::wstring tip, HICON icon) :
 _icon(icon),
 _tip(tip) {
@@ -21,7 +26,7 @@ _tip(tip) {
     _nid.uCallbackMessage = MSG_NOTIFYICON;
     _nid.hIcon = _icon;
 
-    wcscpy_s(_nid.szTip, 128, tip.c_str());
+    CopyShellString(_nid.szTip, tip);
 
     Shell_NotifyIcon(NIM_ADD, &_nid);
 
@@ -39,8 +44,8 @@ void NotifyIcon::Balloon(std::wstring title, std::wstring text, HICON icon) {
         _nid.hBalloonIcon = icon;
     }
 
-    wcscpy_s(_nid.szInfoTitle, 64, title.c_str());
-    wcscpy_s(_nid.szInfo, 256, text.c_str());
+    CopyShellString(_nid.szInfoTitle, title);
+    CopyShellString(_nid.szInfo, text);
 
     Shell_NotifyIcon(NIM_MODIFY, &_nid);
 }
@@ -51,7 +56,7 @@ void NotifyIcon::UpdateIcon(HICON icon) {
 }
 
 void NotifyIcon::UpdateToolTip(std::wstring newTip) {
-    wcscpy_s(_nid.szTip, 128, newTip.c_str());
+    CopyShellString(_nid.szTip, newTip);
     Shell_NotifyIcon(NIM_MODIFY, &_nid);
 }
 

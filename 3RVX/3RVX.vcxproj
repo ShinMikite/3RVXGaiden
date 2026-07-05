@@ -110,7 +110,7 @@
       <AdditionalDependencies>comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,7 +130,7 @@
       <AdditionalDependencies>comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug (64)|Win32'">
@@ -151,7 +151,7 @@
       <AdditionalDependencies>comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug (64)|x64'">
@@ -171,7 +171,7 @@
       <AdditionalDependencies>comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -190,7 +190,7 @@
       <AdditionalDependencies>comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -209,7 +209,7 @@
       <AdditionalDependencies>comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -248,6 +248,7 @@
     <ClInclude Include="KeyboardHotkeyProcessor.h" />
     <ClInclude Include="MeterWnd\AnimationFactory.h" />
     <ClInclude Include="MeterWnd\Animations\AnimationTypes.h" />
+    <ClInclude Include="MeterWnd\Animations\SlideOut.h" />
     <ClInclude Include="MeterWnd\LayeredWnd.h" />
     <ClInclude Include="MeterWnd\Meters\CallbackMeter.h" />
     <ClInclude Include="MeterWnd\MeterCallbackReceiver.h" />
@@ -313,6 +314,7 @@
     <ClCompile Include="KeyboardHotkeyProcessor.cpp" />
     <ClCompile Include="MeterWnd\AnimationFactory.cpp" />
     <ClCompile Include="MeterWnd\Animations\AnimationTypes.cpp" />
+    <ClCompile Include="MeterWnd\Animations\SlideOut.cpp" />
     <ClCompile Include="MeterWnd\LayeredWnd.cpp" />
     <ClCompile Include="MeterWnd\Meters\CallbackMeter.cpp" />
     <ClCompile Include="MeterWnd\Meters\StaticImage.cpp" />

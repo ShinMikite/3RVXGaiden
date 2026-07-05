@@ -68,6 +68,7 @@ public:
 
     virtual void Show();
     virtual void Hide();
+    bool Visible();
 
     int X();
     int Y();

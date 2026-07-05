@@ -124,7 +124,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -140,7 +140,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug (64)|Win32'">
@@ -156,7 +156,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug (64)|x64'">
@@ -172,7 +172,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -193,7 +193,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -214,7 +214,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins" || mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages" || exit /B 0</Command>
+      <Command>if not exist "$(TargetDir)\Skins" mklink /j "$(TargetDir)\Skins" "$(ProjectDir)\..\Skins"&#xD;&#xA;if not exist "$(TargetDir)\Languages" mklink /j "$(TargetDir)\Languages" "$(ProjectDir)\..\Languages"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

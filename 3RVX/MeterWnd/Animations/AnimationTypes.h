@@ -6,13 +6,12 @@
 #include <vector>
 #include <string>
 
-#include "FadeOut.h"
-
 class AnimationTypes {
 public:
     enum HideAnimation {
         None,
-        Fade
+        Fade,
+        Slide
     };
     static std::vector<std::wstring> HideAnimationNames;
 };

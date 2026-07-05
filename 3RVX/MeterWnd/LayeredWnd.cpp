@@ -220,6 +220,10 @@ void LayeredWnd::Hide() {
     _visible = false;
 }
 
+bool LayeredWnd::Visible() {
+    return _visible;
+}
+
 Gdiplus::Bitmap *LayeredWnd::Bitmap() {
     return _bitmap;
 }
