@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  portable-zip:
+    name: Build portable zip
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build x64 Release
+        shell: pwsh
+        run: |
+          msbuild 3RVX.sln `
+            /m `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /p:PlatformToolset=v143 `
+            /v:m
+
+      - name: Create portable package
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          if ([string]::IsNullOrWhiteSpace($version) -or $version -eq "main") {
+            $version = "manual-${{ github.run_number }}"
+          }
+
+          $packageName = "3RVXGaiden-$version-portable"
+          $stage = Join-Path $env:RUNNER_TEMP $packageName
+          $zip = Join-Path $env:GITHUB_WORKSPACE "$packageName.zip"
+
+          New-Item -ItemType Directory -Path $stage -Force | Out-Null
+          Copy-Item "x64\Release\3RVX.exe" $stage
+          Copy-Item "x64\Release\Settings.exe" $stage
+          Copy-Item "3RVX\Settings.xml" $stage
+          Copy-Item "Skins" $stage -Recurse
+          Copy-Item "Languages" $stage -Recurse
+          Copy-Item "README.md" $stage
+          Copy-Item "LICENSE.txt" $stage
+          Copy-Item "CHANGELOG.md" $stage
+
+          Compress-Archive -LiteralPath $stage -DestinationPath $zip -CompressionLevel Optimal
+          Get-FileHash $zip -Algorithm SHA256 | Format-List
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-zip
+          path: 3RVXGaiden-*-portable.zip
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: 3RVXGaiden-*-portable.zip
+          prerelease: ${{ contains(github.ref_name, 'preview') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
+          generate_release_notes: true

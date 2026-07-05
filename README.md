@@ -1,8 +1,8 @@
-<a href="https://3RVX.com"><img align="right" src="Assets/MainIcon-PNGs/64.png"/></a>
+<a href="https://3RVX.com"><img align="right" width="64" src="Assets/MainIcon-PNGs/256.png"/></a>
 
 3RVXGaiden
 ====
-3RVXGaiden is a customizable on-screen display (OSD) and hotkey tool for Windows systems.
+3RVXGaiden is a fork of the original [3RVX](https://3RVX.com), a customizable on-screen display (OSD) and hotkey tool for Windows systems.
 
 This fork improves multi-monitor handling by saving stable monitor identities instead of relying on changing `DISPLAY#` assignments.
 This helps keep the OSD on the selected monitor when another display is disconnected, powered off, or switched to a different input during startup.
