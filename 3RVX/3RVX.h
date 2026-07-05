@@ -7,13 +7,9 @@
 #include <unordered_map>
 
 #include "HotkeyInfo.h"
-#include "KeyboardHotkeyProcessor.h"
 #include "Window.h"
 
 class OSD;
-class BrightnessOSD;
-class EjectOSD;
-class KeyboardOSD;
 class VolumeOSD;
 
 class HotkeyManager;
@@ -24,13 +20,9 @@ public:
 
 private:
     std::vector<OSD *> _osds;
-    BrightnessOSD *_bOSD;
-    EjectOSD *_eOSD;
-    KeyboardOSD *_kOSD;
     VolumeOSD *_vOSD;
 
     HotkeyManager *_hkManager;
-    KeyboardHotkeyProcessor _kbHotkeyProcessor;
     std::unordered_map<int, HotkeyInfo> _hotkeys;
 
     void Initialize();
@@ -46,10 +38,6 @@ public:
 
     static HWND MasterSettingsHwnd() {
         return FindWindow(CLASS_3RVX_SETTINGS, CLASS_3RVX_SETTINGS);
-    }
-
-    static HWND UpdaterHwnd() {
-        return FindWindow(CLASS_3RVX_UPDATER, CLASS_3RVX_UPDATER);
     }
 
     static void Message(WPARAM wParam, LPARAM lParam, bool post = false) {
@@ -76,7 +64,6 @@ public:
 public:
     static constexpr const wchar_t *CLASS_3RVX = L"3RVXv3";
     static constexpr const wchar_t *CLASS_3RVX_SETTINGS = L"3RVXv3-Settings";
-    static constexpr const wchar_t *CLASS_3RVX_UPDATER = L"3RVXv3-Updater";
 
     static const UINT WM_3RVX_CTRL;
     static const UINT WM_3RVX_SETTINGSCTRL;

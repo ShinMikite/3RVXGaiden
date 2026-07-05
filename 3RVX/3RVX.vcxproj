@@ -215,24 +215,18 @@
   <ItemGroup>
     <ClInclude Include="3RVX.h" />
     <ClInclude Include="CommCtl.h" />
-    <ClInclude Include="Controllers\BrightnessController.h" />
-    <ClInclude Include="Controllers\Brightness\DDCBrightnessController.h" />
-    <ClInclude Include="Controllers\Brightness\WMIBrightnessController.h" />
     <ClInclude Include="Controllers\Volume\CoreAudio.h" />
     <ClInclude Include="Controllers\Volume\CurveTransformer.h" />
     <ClInclude Include="Controllers\Volume\VolumeLimiter.h" />
     <ClInclude Include="Controllers\Volume\VolumeTransformation.h" />
     <ClInclude Include="Controllers\Volume\VolumeController.h" />
     <ClInclude Include="D3DDevice.h" />
-    <ClInclude Include="DriveInfo.h" />
     <ClInclude Include="DisplayManager.h" />
     <ClInclude Include="Error.h" />
     <ClInclude Include="HideWin10VolumeOSD.h" />
     <ClInclude Include="MeterWnd\Meters\HorizontalSliderKnob.h" />
     <ClInclude Include="MeterWnd\Meters\SliderKnob.h" />
     <ClInclude Include="MeterWnd\Meters\VerticalSliderKnob.h" />
-    <ClInclude Include="OSD\BrightnessOSD.h" />
-    <ClInclude Include="OSD\KeyboardOSD.h" />
     <ClInclude Include="DefaultSettings.h" />
     <ClInclude Include="Skin\ErrorSkin.h" />
     <ClInclude Include="Skin\MultiSkin.h" />
@@ -245,7 +239,6 @@
     <ClInclude Include="SyntheticKeyboard.h" />
     <ClInclude Include="HotkeyInfo.h" />
     <ClInclude Include="HotkeyProcessor.h" />
-    <ClInclude Include="KeyboardHotkeyProcessor.h" />
     <ClInclude Include="MeterWnd\AnimationFactory.h" />
     <ClInclude Include="MeterWnd\Animations\AnimationTypes.h" />
     <ClInclude Include="MeterWnd\Animations\SlideOut.h" />
@@ -254,7 +247,6 @@
     <ClInclude Include="MeterWnd\MeterCallbackReceiver.h" />
     <ClInclude Include="MeterWnd\Meters\StaticImage.h" />
     <ClInclude Include="MeterWnd\Meters\VerticalBar.h" />
-    <ClInclude Include="OSD\EjectOSD.h" />
     <ClInclude Include="HotkeyManager.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MeterWnd\Animation.h" />
@@ -290,19 +282,14 @@
   <ItemGroup>
     <ClCompile Include="3RVX.cpp" />
     <ClCompile Include="3RVXConsts.cpp" />
-    <ClCompile Include="Controllers\Brightness\DDCBrightnessController.cpp" />
-    <ClCompile Include="Controllers\Brightness\WMIBrightnessController.cpp" />
     <ClCompile Include="Controllers\Volume\CoreAudio.cpp" />
     <ClCompile Include="D3DDevice.cpp" />
-    <ClCompile Include="DriveInfo.cpp" />
     <ClCompile Include="DisplayManager.cpp" />
     <ClCompile Include="Error.cpp" />
     <ClCompile Include="HideWin10VolumeOSD.cpp" />
     <ClCompile Include="MeterWnd\Meters\HorizontalSliderKnob.cpp" />
     <ClCompile Include="MeterWnd\Meters\SliderKnob.cpp" />
     <ClCompile Include="MeterWnd\Meters\VerticalSliderKnob.cpp" />
-    <ClCompile Include="OSD\BrightnessOSD.cpp" />
-    <ClCompile Include="OSD\KeyboardOSD.cpp" />
     <ClCompile Include="Skin\ErrorSkin.cpp" />
     <ClCompile Include="Skin\MultiSkin.cpp" />
     <ClCompile Include="Skin\Skin.cpp" />
@@ -311,7 +298,6 @@
     <ClCompile Include="Skin\AccentColor.cpp" />
     <ClCompile Include="SyntheticKeyboard.cpp" />
     <ClCompile Include="HotkeyInfo.cpp" />
-    <ClCompile Include="KeyboardHotkeyProcessor.cpp" />
     <ClCompile Include="MeterWnd\AnimationFactory.cpp" />
     <ClCompile Include="MeterWnd\Animations\AnimationTypes.cpp" />
     <ClCompile Include="MeterWnd\Animations\SlideOut.cpp" />
@@ -319,7 +305,6 @@
     <ClCompile Include="MeterWnd\Meters\CallbackMeter.cpp" />
     <ClCompile Include="MeterWnd\Meters\StaticImage.cpp" />
     <ClCompile Include="MeterWnd\Meters\VerticalBar.cpp" />
-    <ClCompile Include="OSD\EjectOSD.cpp" />
     <ClCompile Include="HotkeyManager.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="MeterWnd\Animations\FadeOut.cpp" />

@@ -13,7 +13,15 @@
 #include "AnimationFactory.h"
 
 MeterWnd::MeterWnd(LPCWSTR className, LPCWSTR title, HINSTANCE hInstance) :
-LayeredWnd(className, title, hInstance, NULL, WINDOW_STYLES) {
+LayeredWnd(className, title, hInstance, NULL, WINDOW_STYLES),
+_composite(NULL),
+_background(NULL),
+_dirtyRect(NULL),
+_visibleDuration(0),
+_hideAnimation(NULL),
+_disableFullscreen(false),
+_disableDirectX(false),
+_d3dDevice(NULL) {
 
 }
 
@@ -72,6 +80,13 @@ void MeterWnd::MeterLevels(float value) {
 }
 
 void MeterWnd::HideAnimation(AnimationTypes::HideAnimation anim, int speed) {
+    KillTimer(Window::Handle(), TIMER_IN);
+    KillTimer(Window::Handle(), TIMER_OUT);
+
+    if (_hideAnimation) {
+        _hideAnimation->Reset(this);
+    }
+
     delete _hideAnimation;
     _hideAnimation = AnimationFactory::Create(anim, speed);
 }
@@ -93,6 +108,15 @@ bool MeterWnd::EnableGlass(Gdiplus::Bitmap *mask) {
 void MeterWnd::Show(bool animate) {
     bool wasVisible = _visible;
     bool animateIn = false;
+
+    if (wasVisible) {
+        KillTimer(Window::Handle(), TIMER_IN);
+        KillTimer(Window::Handle(), TIMER_OUT);
+
+        if (_hideAnimation) {
+            _hideAnimation->Reset(this);
+        }
+    }
 
     if (_visible == false) {
         UpdateWindowPosition();
@@ -135,7 +159,7 @@ void MeterWnd::Show(bool animate) {
         SetTimer(Window::Handle(), TIMER_HIDE, _visibleDuration, NULL);
         KillTimer(Window::Handle(), TIMER_OUT);
 
-        if (_hideAnimation && (wasVisible || !animateIn)) {
+        if (_hideAnimation && !wasVisible && !animateIn) {
             _hideAnimation->Reset(this);
         }
     }

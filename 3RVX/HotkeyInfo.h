@@ -44,6 +44,7 @@ public:
         Exit,
     };
     static std::vector<std::wstring> ActionNames;
+    static bool IsSupportedAction(HotkeyActions action);
 
     enum VolumeKeyArgTypes {
         NoArgs = -1,

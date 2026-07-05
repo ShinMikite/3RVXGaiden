@@ -1,13 +1,14 @@
-Skinning 3RVX
-=============
+Skinning 3RVXGaiden
+===================
 
-3RVX allows for its interface to be changed through customizable skins. Each part of the user interface can be skinned, including:
-* The on-screen displays (OSDs): Volume, Eject, etc.
-* Control sliders
+3RVXGaiden allows for its volume interface to be changed through customizable skins. Each supported part of the user interface can be skinned, including:
+* The volume and mute on-screen displays (OSDs)
+* The volume slider
 * The system notification icons (system tray)
 * Sound effects
 
-The following figure illustrates these components.
+Brightness, eject, and keyboard-status skin resources may exist in inherited
+skins, but they are not part of the supported 3RVXGaiden app surface.
 
 XML Format
 ----------

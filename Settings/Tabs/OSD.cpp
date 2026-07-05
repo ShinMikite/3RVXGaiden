@@ -11,11 +11,8 @@
 #include "../resource.h"
 
 void OSD::Initialize() {
-    using std::placeholders::_1;
-
-    _osdList = new ListView(LST_OSDS, *this);
-    _osdList->OnItemChange = std::bind(&OSD::OnOSDListItemChange, this, _1);
-
+    _volumeGroup = new GroupBox(GRP_VOLUME, *this);
+    _volumeEnabled = new Checkbox(CHK_ENABLEVOSD, *this);
     _volumeIcon = new Checkbox(CHK_VOLICON, *this);
     _subscribeVolEvents = new Checkbox(CHK_MONITORVOL, *this);
     _audioDeviceLabel = new Label(LBL_AUDIODEV, *this);
@@ -38,74 +35,21 @@ void OSD::Initialize() {
         _limitValue->Text(value);
         return true;
     };
-    _forceLimit = new Checkbox(CHK_FORCELIMIT, *this);
     _muteLock = new Checkbox(CHK_MUTELOCK, *this);
-    _volumeGroup = new GroupBox(GRP_VOLUME, *this);
     _volumeGroup->AddChildren({
+        _volumeEnabled,
         _volumeIcon,
         _subscribeVolEvents,
         _audioDeviceLabel, _audioDevice,
         _audioTaperLabel, _audioTaper, _audioTaperEdit,
         _limitLabel, _limitSlider, _limitValue,
-        _forceLimit,
         _muteLock,
     });
-
-    _ejectIcon = new Checkbox(CHK_EJECTICON, *this);
-    _subscribeEjectEvents = new Checkbox(CHK_SUBSCRIBEEJECT, *this);
-    _ejectGroup = new GroupBox(GRP_EJECT, *this);
-    _ejectGroup->AddChildren({
-        _ejectIcon,
-        _subscribeEjectEvents,
-    });
-
-    _brightnessIcon = new Checkbox(CHK_BRIGHTICON, *this);
-    _brightnessGroup = new GroupBox(GRP_BRIGHTNESS, *this);
-    _brightnessGroup->AddChildren({
-        _brightnessIcon,
-    });
-
-    _keyboardIcon = new Checkbox(CHK_KEYICON, *this);
-    _caps = new Checkbox(CHK_ENABLECAPS, *this);
-    _scroll = new Checkbox(CHK_ENABLESCROLL, *this);
-    _num = new Checkbox(CHK_ENABLENUM, *this);
-    _media = new Checkbox(CHK_ENABLEMK, *this);
-    _keyboardGroup = new GroupBox(GRP_KEYBOARD, *this);
-    _keyboardGroup->AddChildren({
-        _keyboardIcon,
-        _caps, _scroll, _num,
-        _media,
-    });
-
-    /* Define groupbox order */
-    GroupBox *groups[] = {
-        _volumeGroup,
-        _brightnessGroup,
-        _ejectGroup,
-        _keyboardGroup
-    };
-
-    /* Move other groupboxes into position (same as volume) */
-    int groupX = _volumeGroup->X();
-    int groupY = _volumeGroup->Y();
-    for (GroupBox *grp : groups) {
-        grp->X(groupX);
-        grp->Y(groupY);
-        grp->Visible(false);
-        _groups.push_back(grp);
-    }
 }
 
 void OSD::LoadSettings() {
     Settings *settings = Settings::Instance();
     LanguageTranslator *translator = settings->Translator();
-
-    /* Translations */
-    _osdStr = translator->Translate(_osdStr);
-    _volumeStr = translator->Translate(_volumeStr);
-    _brightnessStr = translator->Translate(_brightnessStr);
-    _ejectStr = translator->Translate(_ejectStr);
-    _keyboardStr = translator->Translate(_keyboardStr);
 
     _audioDevice->AddItem(translator->Translate(L"Default"));
     _audioDevice->Select(0);
@@ -133,43 +77,28 @@ void OSD::LoadSettings() {
     int level = settings->VolumeCurveAdjustment();
     if (_taperLevels.find(level) == _taperLevels.end()) {
         /* Select the last item (custom) */
-        _audioTaper->Select(_taperLevels.size());
+        _audioTaper->Select((int) _taperLevels.size());
         _audioTaperEdit->Text(settings->VolumeCurveAdjustment());
     } else {
         _audioTaper->Select(translator->Translate(_taperLevels[level]));
     }
     _audioTaper->OnSelectionChange();
 
-    _osdList->AddListExStyle(LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT);
-    _osdList->AddColumn(_osdStr, (int) (_osdList->Width() * .97f));
-    _osdList->AddItem(_volumeStr);
-    _osdList->AddItem(_brightnessStr);
-    _osdList->AddItem(_ejectStr);
-    _osdList->AddItem(_keyboardStr);
-    _osdList->Selection(0);
-
-    _osdList->Checked(0, settings->VolumeOSDEnabled());
-    _osdList->Checked(1, settings->BrightnessOSDEnabled());
-    _osdList->Checked(2, settings->EjectOSDEnabled());
-    _osdList->Checked(3, settings->KeyboardOSDEnabled());
-
+    _volumeEnabled->Checked(settings->VolumeOSDEnabled());
     _volumeIcon->Checked(settings->VolumeIconEnabled());
     _subscribeVolEvents->Checked(settings->SubscribeVolumeEvents());
     _limitSlider->Position((int) (settings->VolumeLimiter() * 100.0f));
     _muteLock->Checked(settings->MuteOnLock());
-
-    _ejectIcon->Checked(settings->EjectIconEnabled());
-    _subscribeEjectEvents->Checked(settings->SubscribeEjectEvents());
 }
 
 void OSD::SaveSettings() {
-    CLOG(L"Saving: OSD");
+    CLOG(L"Saving: Volume");
     Settings *settings = Settings::Instance();
     
-    settings->VolumeOSDEnabled(_osdList->Checked(0));
-    settings->BrightnessOSDEnabled(_osdList->Checked(1));
-    settings->EjectOSDEnabled(_osdList->Checked(2));
-    settings->KeyboardOSDEnabled(_osdList->Checked(3));
+    settings->VolumeOSDEnabled(_volumeEnabled->Checked());
+    settings->BrightnessOSDEnabled(false);
+    settings->EjectOSDEnabled(false);
+    settings->KeyboardOSDEnabled(false);
 
     settings->VolumeIconEnabled(_volumeIcon->Checked());
     settings->SubscribeVolumeEvents(_subscribeVolEvents->Checked());
@@ -189,44 +118,6 @@ void OSD::SaveSettings() {
     }
     settings->VolumeLimiter(((float) _limitSlider->Position()) / 100.0f);
     settings->MuteOnLock(_muteLock->Checked());
-
-    settings->EjectIconEnabled(_ejectIcon->Checked());
-    settings->SubscribeEjectEvents(_subscribeEjectEvents->Checked());
-}
-
-void OSD::ShowGroup(int group) {
-    for (GroupBox *grp : _groups) {
-        grp->Visible(false);
-    }
-
-    GroupBox *showGroup = _groups[group];
-    showGroup->Enabled(_osdList->Checked(group));
-    showGroup->Visible(true);
-
-    _audioTaper->OnSelectionChange();
-}
-
-void OSD::OnOSDListItemChange(NMLISTVIEW *lv) {
-    if (lv->uChanged & LVIF_STATE) {
-        UINT oSimg = lv->uOldState & LVIS_STATEIMAGEMASK;
-        UINT nSimg = lv->uNewState & LVIS_STATEIMAGEMASK;
-        if (oSimg != nSimg) {
-            /* Checkbox changed */
-            if (_osdList->Selection() == lv->iItem) {
-                /* Activate the Apply button */
-                PropSheet_Changed(GetParent(SettingsTab::DialogHandle()), NULL);
-
-                /* NOTE: Check state at 0xF000 (1 = un, 2 = check).
-                 * Shift to check:
-                 * if ((nSimg >> 13) > 0) { checked } else { unchecked }
-                 */
-
-                ShowGroup(lv->iItem);
-            }
-        }
-
-        if (lv->uNewState & LVIS_SELECTED) {
-            ShowGroup(lv->iItem);
-        }
-    }
+    settings->EjectIconEnabled(false);
+    settings->SubscribeEjectEvents(false);
 }

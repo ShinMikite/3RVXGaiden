@@ -93,12 +93,6 @@ int APIENTRY wWinMain(
         return EXIT_SUCCESS;
     }
 
-    HWND updater = _3RVX::UpdaterHwnd();
-    if (updater != 0) {
-        CLOG(L"Telling updater to close");
-        SendMessage(updater, WM_CLOSE, 0, 0);
-    }
-
     SettingsUI mainWnd(hInstance);
     INT_PTR result;
     do {

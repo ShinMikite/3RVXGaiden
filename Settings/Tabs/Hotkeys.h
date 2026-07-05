@@ -22,6 +22,7 @@ protected:
 
 protected:
     std::vector<HotkeyInfo> _keyInfo;
+    std::vector<int> _actionIds;
     LanguageTranslator *_translator;
 
     HotkeyInfo *CurrentHotkeyInfo();
@@ -31,11 +32,11 @@ protected:
     void LoadAction(int index, HotkeyInfo &selection);
     std::wstring ActionString(HotkeyInfo &selection);
     std::wstring VolumeActionString(HotkeyInfo &selection);
+    int ActionComboIndex(int action);
+    int SelectedAction();
 
     void DefaultArgControlStates();
     void VolumeArgControlStates(HotkeyInfo &selection);
-
-    std::wstring OpenFileDialog();
 
 private:
     /* Control Event Handlers */
@@ -77,13 +78,4 @@ protected:
     std::wstring _amountVolArgStr = L"Amount:";
     std::wstring _unitsVolArgStr = L"Volume Units";
     std::wstring _percentVolArgStr = L"Percent";
-    std::wstring _keyArgStr = L"Key:";
-    std::wstring _driveArgStr = L"Drive:";
-    std::wstring _pathArgStr = L"Path:";
-    std::wstring _vkArgStr = L"VK Code (Hex):";
-
-    std::wstring _ejectActionStr = L"Eject Drive: {1}";
-    std::wstring _mediaActionStr = L"Media Key: {1}";
-    std::wstring _runActionStr = L"Run: {1}";
-    std::wstring _vkActionStr = L"Virtual Key: 0x{1}";
 };

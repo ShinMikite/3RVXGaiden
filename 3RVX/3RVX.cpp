@@ -16,9 +16,6 @@
 #include "HotkeyManager.h"
 #include "Logger.h"
 #include "OSD/OSD.h"
-#include "OSD/BrightnessOSD.h"
-#include "OSD/EjectOSD.h"
-#include "OSD/KeyboardOSD.h"
 #include "OSD/VolumeOSD.h"
 #include "Settings.h"
 #include "Skin/AccentColor.h"
@@ -91,7 +88,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 }
 
 _3RVX::_3RVX(HINSTANCE hInstance) :
-Window(_3RVX::CLASS_3RVX, _3RVX::CLASS_3RVX, hInstance) {
+Window(_3RVX::CLASS_3RVX, _3RVX::CLASS_3RVX, hInstance),
+_vOSD(nullptr),
+_hkManager(nullptr) {
 
 }
 
@@ -99,13 +98,7 @@ void _3RVX::Initialize() {
     CLOG(L"Initializing...");
 
     delete _vOSD;
-    delete _eOSD;
-    delete _bOSD;
-    delete _kOSD;
     _vOSD = nullptr;
-    _eOSD = nullptr;
-    _bOSD = nullptr;
-    _kOSD = nullptr;
 
     Settings *settings = Settings::Instance();
     settings->Load();
@@ -115,16 +108,11 @@ void _3RVX::Initialize() {
     DisplayManager::UpdateMonitorMap();
 
     /* OSDs */
-    _eOSD = new EjectOSD();
     _vOSD = new VolumeOSD();
-    _bOSD = new BrightnessOSD();
-    _kOSD = new KeyboardOSD();
+    _vOSD->Enabled(settings->VolumeOSDEnabled());
 
     _osds.clear();
-    _osds.push_back(_eOSD);
     _osds.push_back(_vOSD);
-    _osds.push_back(_bOSD);
-    _osds.push_back(_kOSD);
 
     /* Hotkey setup */
     if (_hkManager != NULL) {
@@ -151,33 +139,6 @@ void _3RVX::ProcessHotkeys(HotkeyInfo &hki) {
     case HotkeyInfo::VolumeSlider:
         if (_vOSD) {
             _vOSD->ProcessHotkeys(hki);
-        }
-        break;
-
-    case HotkeyInfo::EjectDrive:
-    case HotkeyInfo::EjectLastDisk:
-        if (_eOSD) {
-            _eOSD->ProcessHotkeys(hki);
-        }
-        break;
-
-    case HotkeyInfo::IncreaseBrightness:
-    case HotkeyInfo::DecreaseBrightness:
-    case HotkeyInfo::SetBrightness:
-        if (_bOSD) {
-            _bOSD->ProcessHotkeys(hki);
-        }
-        break;
-
-    case HotkeyInfo::MediaKey:
-    case HotkeyInfo::VirtualKey:
-        _kbHotkeyProcessor.ProcessHotkeys(hki);
-        break;
-
-    case HotkeyInfo::Run:
-        if (hki.HasArgs()) {
-            ShellExecute(NULL, L"open", hki.args[0].c_str(),
-                NULL, NULL, SW_SHOWNORMAL);
         }
         break;
 
@@ -224,7 +185,8 @@ LRESULT _3RVX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
         /* While this message contains the colorization color, we need to
          * refresh here to handle situations where the user has requested a
          * different color (undocumented colorization color, for example). */
-        CLOG(L"Received DWM colorization change notification: %x", wParam);
+        CLOG(L"Received DWM colorization change notification: %x",
+            (unsigned int) wParam);
         AccentColor::Instance()->Refresh();
     }
 
@@ -237,8 +199,9 @@ LRESULT _3RVX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
         CLOG(L"Shutting down");
         HideWin10VolumeOSD::ShowOSD();
         HotkeyManager::Instance()->Shutdown();
-        _vOSD->HideIcon();
-        _eOSD->HideIcon();
+        if (_vOSD) {
+            _vOSD->HideIcon();
+        }
         break;
     }
 
@@ -264,18 +227,7 @@ LRESULT _3RVX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
             int except = (OSDType) lParam;
             switch (except) {
             case Volume:
-                if (_eOSD) { _eOSD->Hide(); }
-                if (_bOSD) { _bOSD->Hide(); }
                 break;
-
-            case Eject:
-                if (_vOSD) { _vOSD->Hide(); }
-                if (_bOSD) { _bOSD->Hide(); }
-                break;
-
-            case Brightness:
-                if (_vOSD) { _vOSD->Hide(); }
-                if (_eOSD) { _eOSD->Hide(); }
             }
 
             break;

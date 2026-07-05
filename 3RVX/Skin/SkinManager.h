@@ -23,22 +23,13 @@ public:
 
     OSDComponent *MuteOSD();
 
-    OSDComponent *EjectOSD();
-    HICON &EjectIcon();
-
-    OSDComponent *BrightnessOSD();
-
 private:
     OSDComponent *_volumeOSD;
     std::vector<HICON> _volumeIconset;
     SliderComponent *_volumeSlider;
     OSDComponent *_muteOSD;
 
-    OSDComponent *_ejectOSD;
-    HICON _ejectIcon;
-
-    OSDComponent *_brightnessOSD;
-
+    SkinManager();
     ~SkinManager();
     void DisposeComponents();
 

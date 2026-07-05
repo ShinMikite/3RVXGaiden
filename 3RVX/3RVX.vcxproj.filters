@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -87,9 +87,6 @@
     <ClInclude Include="OSD\OSD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OSD\EjectOSD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OSD\VolumeOSD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -147,16 +144,10 @@
     <ClInclude Include="SyntheticKeyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardHotkeyProcessor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CommCtl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OSD\KeyboardOSD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Skin\Skin.h">
@@ -186,12 +177,6 @@
     <ClInclude Include="Skin\MultiSkin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OSD\BrightnessOSD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Controllers\BrightnessController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Skin\ErrorSkin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -202,9 +187,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Controllers\Volume\VolumeLimiter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DriveInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DefaultSettings.h">
@@ -224,12 +206,6 @@
     </ClInclude>
     <ClInclude Include="D3DDevice.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Controllers\Brightness\DDCBrightnessController.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Controllers\Brightness\WMIBrightnessController.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="HideWin10VolumeOSD.h">
       <Filter>Header Files</Filter>
@@ -296,9 +272,6 @@
     <ClCompile Include="OSD\OSD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OSD\EjectOSD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OSD\VolumeOSD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -344,16 +317,10 @@
     <ClCompile Include="SyntheticKeyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardHotkeyProcessor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="3RVXConsts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OSD\KeyboardOSD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Skin\SkinInfo.cpp">
@@ -374,13 +341,7 @@
     <ClCompile Include="Skin\Skin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OSD\BrightnessOSD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Skin\ErrorSkin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DriveInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MeterWnd\Meters\SliderKnob.cpp">
@@ -396,12 +357,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="D3DDevice.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Controllers\Brightness\DDCBrightnessController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Controllers\Brightness\WMIBrightnessController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HideWin10VolumeOSD.cpp">

@@ -18,6 +18,13 @@
 
 SkinManager *SkinManager::instance;
 
+SkinManager::SkinManager() :
+_volumeOSD(nullptr),
+_volumeSlider(nullptr),
+_muteOSD(nullptr) {
+
+}
+
 SkinManager *SkinManager::Instance() {
     if (instance == NULL) {
         instance = new SkinManager();
@@ -64,18 +71,6 @@ void SkinManager::LoadSkin(std::wstring skinXML) {
         if (_muteOSD == nullptr) {
             _muteOSD = skin->MuteOSD();
         }
-
-        if (_ejectOSD == nullptr) {
-            _ejectOSD = skin->EjectOSD();
-        }
-
-        if (_ejectIcon == nullptr) {
-            _ejectIcon = skin->EjectIcon();
-        }
-
-        if (_brightnessOSD == nullptr) {
-            _brightnessOSD = skin->BrightnessOSD();
-        }
     }
 
     for (Skin *skin : skins) {
@@ -99,18 +94,6 @@ OSDComponent *SkinManager::MuteOSD() {
     return _muteOSD;
 }
 
-OSDComponent *SkinManager::EjectOSD() {
-    return _ejectOSD;
-}
-
-HICON &SkinManager::EjectIcon() {
-    return _ejectIcon;
-}
-
-OSDComponent * SkinManager::BrightnessOSD() {
-    return _brightnessOSD;
-}
-
 SkinManager::~SkinManager() {
     DisposeComponents();
 }
@@ -127,12 +110,4 @@ void SkinManager::DisposeComponents() {
 
     delete _muteOSD;
     _muteOSD = nullptr;
-
-    delete _ejectOSD;
-    _ejectOSD = nullptr;
-    DestroyIcon(_ejectIcon);
-    _ejectIcon = nullptr;
-
-    delete _brightnessOSD;
-    _brightnessOSD = nullptr;
 }

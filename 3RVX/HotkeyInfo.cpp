@@ -48,6 +48,23 @@ _cache(false) {
 
 }
 
+bool HotkeyInfo::IsSupportedAction(HotkeyActions action) {
+    switch (action) {
+    case IncreaseVolume:
+    case DecreaseVolume:
+    case SetVolume:
+    case Mute:
+    case VolumeSlider:
+    case DisableOSD:
+    case Settings:
+    case Exit:
+        return true;
+
+    default:
+        return false;
+    }
+}
+
 HotkeyInfo::VolumeKeyArgTypes HotkeyInfo::VolumeArgType(HotkeyInfo &hki) {
     if (hki.HasArgs() == false) {
         return VolumeKeyArgTypes::NoArgs;
@@ -155,18 +172,20 @@ bool HotkeyInfo::Valid() {
         return false;
     }
     
-    if (action < 0 || action > (int) ActionNames.size()) {
+    if (action < 0 || action >= (int) ActionNames.size()) {
         LogInvalid(L"Invalid action");
+        return false;
+    }
+
+    if (IsSupportedAction((HotkeyActions) action) == false) {
+        LogInvalid(L"Unsupported action");
         return false;
     }
 
     switch (action) {
     case HotkeyInfo::IncreaseVolume:
     case HotkeyInfo::DecreaseVolume:
-    case HotkeyInfo::SetVolume:
-    case HotkeyInfo::IncreaseBrightness:
-    case HotkeyInfo::DecreaseBrightness:
-    case HotkeyInfo::SetBrightness: {
+    case HotkeyInfo::SetVolume: {
         if (HasArgs() == false) {
             /* Don't do arg checking */
             break;
@@ -185,8 +204,7 @@ bool HotkeyInfo::Valid() {
         }
 
         if (amount == 0.0) {
-            if (action != HotkeyInfo::SetVolume
-                && action != HotkeyInfo::SetBrightness) {
+            if (action != HotkeyInfo::SetVolume) {
 
                 LogInvalid(L"Argument increment must be nonzero");
                 return false;
@@ -203,8 +221,6 @@ bool HotkeyInfo::Valid() {
             break;
     }
 
-    case HotkeyInfo::EjectDrive:
-    case HotkeyInfo::MediaKey:
     case HotkeyInfo::Run:
         if (HasArgs() == false) {
             LogInvalid(L"Argument required");
@@ -232,4 +248,3 @@ std::wstring HotkeyInfo::ToString() {
     }
     return combination + L" -> " + act + L" [ " + argStrs + L"]";
 }
-
