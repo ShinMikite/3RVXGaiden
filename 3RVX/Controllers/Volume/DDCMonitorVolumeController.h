@@ -40,7 +40,10 @@ private:
     static const BYTE VCP_AUDIO_VOLUME = 0x62;
 
     HANDLE _monitorHandle = NULL;
+    bool _hasMonitorHandle = false;
     DWORD _maxVolume = 100;
+    DWORD _currentVolume = 0;
+    bool _hasVolumeValue = false;
     bool _deviceEnabled = false;
     std::wstring _deviceName;
 

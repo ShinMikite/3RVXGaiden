@@ -56,6 +56,10 @@ jobs:
           Copy-Item "README.md" $stage
           Copy-Item "LICENSE.txt" $stage
           Copy-Item "CHANGELOG.md" $stage
+          Copy-Item "SECURITY.md" $stage
+          $documentationStage = Join-Path $stage "Documentation"
+          New-Item -ItemType Directory -Path $documentationStage -Force | Out-Null
+          Copy-Item "Documentation\AV_False_Positives.md" $documentationStage
 
           Compress-Archive -LiteralPath $stage -DestinationPath $zip -CompressionLevel Optimal
           $hash = Get-FileHash $zip -Algorithm SHA256

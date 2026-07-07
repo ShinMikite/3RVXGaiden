@@ -46,6 +46,8 @@ void Settings::Load() {
     /* First, clean up (if needed) */
     delete _translator;
     _translator = NULL;
+    _xml.Clear();
+    _root = NULL;
 
     _file = SettingsFile();
     CLOG(L"Loading settings: %s", _file.c_str());

@@ -1,6 +1,16 @@
 3RVX Changelog
 ==============
 
+3RVXGaiden v0.4.1-preview
+-------------------------
+* Fixed monitor-volume hotkeys not applying on some displays whose DDC/CI
+  physical monitor handle compares as `NULL`.
+* Fixed Settings showing Apply as changed immediately after opening due to
+  controls firing change notifications while tabs were loading.
+* Improved monitor-volume hotkey responsiveness by coalescing rapid volume-key
+  input into the latest pending DDC/CI volume target.
+* Hardened hotkey hook startup/reload handling.
+
 3RVXGaiden v0.4.0-preview
 -------------------------
 * Added DDC/CI monitor volume hotkey actions: Increase Monitor Volume and Decrease Monitor Volume.

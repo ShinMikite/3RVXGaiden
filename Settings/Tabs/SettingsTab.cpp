@@ -22,12 +22,17 @@ INT_PTR SettingsTab::DialogProc(
 
     switch (uMsg) {
     case WM_INITDIALOG:
+        _loading = true;
         Initialize();
         LoadSettings();
+        PropSheet_UnChanged(GetParent(hwndDlg), hwndDlg);
+        _loading = false;
         return FALSE;
 
     case WM_COMMAND:
-        PropSheet_Changed(GetParent(hwndDlg), NULL);
+        if (_loading == false) {
+            PropSheet_Changed(GetParent(hwndDlg), NULL);
+        }
         break;
     }
 

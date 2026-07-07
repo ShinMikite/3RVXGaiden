@@ -50,6 +50,10 @@ _monitorSession(false),
 _subscribeVolEvents(false),
 _unlockUnmute(false),
 _monitorVolumePositioned(false),
+_monitorVolumePending(false),
+_monitorVolumeHasTarget(false),
+_monitorVolumeCurrentUnit(0),
+_monitorVolumeTargetUnit(0),
 _mWnd(L"3RVX-VolumeOSD", L"3RVX-VolumeOSD"),
 _muteWnd(L"3RVX-MuteOSD", L"3RVX-MuteOSD") {
 
@@ -132,6 +136,7 @@ _muteWnd(L"3RVX-MuteOSD", L"3RVX-MuteOSD") {
 }
 
 VolumeOSD::~VolumeOSD() {
+    KillTimer(Window::Handle(), TIMER_MONITOR_VOLUME);
     WTSUnRegisterSessionNotification(Window::Handle());
     DestroyMenu(_deviceMenu);
     DestroyMenu(_menu);
@@ -426,28 +431,50 @@ void VolumeOSD::ChangeVolume(HotkeyInfo &hki, VolumeController *volumeCtrl) {
 
 void VolumeOSD::ChangeMonitorVolume(HotkeyInfo &hki) {
     HotkeyInfo::VolumeKeyArgTypes type = HotkeyInfo::VolumeArgType(hki);
-    float currentVol = _monitorVolumeCtrl->Volume();
+    DWORD maxVolume = _monitorVolumeCtrl->MaxVolume();
+    if (maxVolume == 0) {
+        return;
+    }
+
+    if (!_monitorVolumeHasTarget) {
+        _monitorVolumeCurrentUnit = (int) _monitorVolumeCtrl->VolumeValue();
+        _monitorVolumeTargetUnit = _monitorVolumeCurrentUnit;
+        _monitorVolumeHasTarget = true;
+    }
+
+    int delta = 0;
 
     if (type == HotkeyInfo::VolumeKeyArgTypes::Percentage) {
         float amount = ((float) hki.ArgToDouble(0) / 100.0f);
         if (hki.action == HotkeyInfo::DecreaseMonitorVolume) {
             amount = -amount;
         }
-        _monitorVolumeCtrl->Volume(currentVol + amount);
+        delta = (int) std::round(amount * (float) maxVolume);
+    } else {
+        double unitIncrement = 1.0;
+        if (hki.action == HotkeyInfo::DecreaseMonitorVolume) {
+            unitIncrement = -1.0;
+        }
+        if (type == HotkeyInfo::VolumeKeyArgTypes::Units) {
+            unitIncrement *= hki.ArgToDouble(0);
+        }
+        delta = (int) std::round(unitIncrement);
+    }
+
+    if (delta == 0) {
         return;
     }
 
-    double unitIncrement = 1.0;
-    if (hki.action == HotkeyInfo::DecreaseMonitorVolume) {
-        unitIncrement = -1.0;
-    }
-    if (type == HotkeyInfo::VolumeKeyArgTypes::Units) {
-        unitIncrement *= hki.ArgToDouble(0);
+    int targetUnit = _monitorVolumeTargetUnit + delta;
+    if (targetUnit < 0) {
+        targetUnit = 0;
+    } else if ((DWORD) targetUnit > maxVolume) {
+        targetUnit = (int) maxVolume;
     }
 
-    int currentUnit = (int) _monitorVolumeCtrl->VolumeValue();
-    int targetUnit = currentUnit + (int) std::round(unitIncrement);
-    _monitorVolumeCtrl->VolumeValue(targetUnit);
+    _monitorVolumeTargetUnit = targetUnit;
+    _monitorVolumePending = true;
+    ScheduleMonitorVolumeFlush();
 }
 
 bool VolumeOSD::EnsureMonitorVolumeController(HotkeyInfo &hki) {
@@ -463,6 +490,11 @@ bool VolumeOSD::EnsureMonitorVolumeController(HotkeyInfo &hki) {
     delete _monitorVolumeCtrl;
     _monitorVolumeCtrl = nullptr;
     _monitorVolumeTarget = monitorName;
+    _monitorVolumePending = false;
+    _monitorVolumeHasTarget = false;
+    _monitorVolumeCurrentUnit = 0;
+    _monitorVolumeTargetUnit = 0;
+    KillTimer(Window::Handle(), TIMER_MONITOR_VOLUME);
 
     std::vector<Monitor> monitors;
     DisplayManager::UpdateMonitorMap();
@@ -496,6 +528,9 @@ bool VolumeOSD::EnsureMonitorVolumeController(HotkeyInfo &hki) {
         _monitorVolumeCtrl = new DDCMonitorVolumeController(monitor);
         if (_monitorVolumeCtrl->DeviceEnabled()) {
             _monitorVolumeMonitor = monitor;
+            _monitorVolumeCurrentUnit = (int) _monitorVolumeCtrl->VolumeValue();
+            _monitorVolumeTargetUnit = _monitorVolumeCurrentUnit;
+            _monitorVolumeHasTarget = true;
             return true;
         }
 
@@ -504,6 +539,21 @@ bool VolumeOSD::EnsureMonitorVolumeController(HotkeyInfo &hki) {
     }
 
     return false;
+}
+
+void VolumeOSD::ScheduleMonitorVolumeFlush() {
+    SetTimer(Window::Handle(), TIMER_MONITOR_VOLUME, 25, NULL);
+}
+
+void VolumeOSD::FlushMonitorVolume() {
+    if (!_monitorVolumePending || _monitorVolumeCtrl == nullptr) {
+        return;
+    }
+
+    _monitorVolumePending = false;
+    _monitorVolumeCtrl->VolumeValue(_monitorVolumeTargetUnit);
+    _monitorVolumeCurrentUnit = _monitorVolumeTargetUnit;
+    _monitorVolumeHasTarget = true;
 }
 
 void VolumeOSD::ShowMonitorVolumeChange() {
@@ -551,6 +601,11 @@ void VolumeOSD::OnDisplayChange() {
     _monitorVolumeCtrl = nullptr;
     _monitorVolumeTarget = L"";
     _monitorVolumePositioned = false;
+    _monitorVolumePending = false;
+    _monitorVolumeHasTarget = false;
+    _monitorVolumeCurrentUnit = 0;
+    _monitorVolumeTargetUnit = 0;
+    KillTimer(Window::Handle(), TIMER_MONITOR_VOLUME);
 }
 
 void VolumeOSD::OnMenuEvent(WPARAM wParam) {
@@ -692,6 +747,14 @@ VolumeOSD::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
     case WM_WTSSESSION_CHANGE:
         OnSessionChange(wParam);
+        break;
+
+    case WM_TIMER:
+        if (wParam == TIMER_MONITOR_VOLUME) {
+            KillTimer(Window::Handle(), TIMER_MONITOR_VOLUME);
+            FlushMonitorVolume();
+            return 0;
+        }
         break;
     }
 

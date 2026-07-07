@@ -42,6 +42,10 @@ private:
     bool _subscribeVolEvents;
     bool _unlockUnmute;
     bool _monitorVolumePositioned;
+    bool _monitorVolumePending;
+    bool _monitorVolumeHasTarget;
+    int _monitorVolumeCurrentUnit;
+    int _monitorVolumeTargetUnit;
     Monitor _monitorVolumeMonitor;
     std::wstring _monitorVolumeTarget;
     std::vector<VolumeTransformation *> _volumeTransformations;
@@ -72,6 +76,8 @@ private:
     void ChangeVolume(HotkeyInfo &hki, VolumeController *volumeCtrl);
     void ChangeMonitorVolume(HotkeyInfo &hki);
     bool EnsureMonitorVolumeController(HotkeyInfo &hki);
+    void ScheduleMonitorVolumeFlush();
+    void FlushMonitorVolume();
     void ShowMonitorVolumeChange();
     void UpdateIcon();
     void UpdateIconImage();
@@ -108,5 +114,6 @@ private:
     static const int MENU_MIXER = 1;
     static const int MENU_EXIT = 2;
     static const int MENU_DEVICE = 0xF000;
+    static const int TIMER_MONITOR_VOLUME = 1;
 
 };

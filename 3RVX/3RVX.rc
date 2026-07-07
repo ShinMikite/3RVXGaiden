@@ -50,8 +50,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,0,0
- PRODUCTVERSION 0,4,0,0
+ FILEVERSION 0,4,1,0
+ PRODUCTVERSION 0,4,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -68,12 +68,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "ShinMikite"
             VALUE "FileDescription", "3RVXGaiden"
-            VALUE "FileVersion", "0.4.0.0"
+            VALUE "FileVersion", "0.4.1.0"
             VALUE "InternalName", "3RVX.exe"
             VALUE "LegalCopyright", "Fork (C) 2026 ShinMikite. Original 3RVX (C) 2016 Matthew Malensek"
             VALUE "OriginalFilename", "3RVX.exe"
             VALUE "ProductName", "3RVXGaiden"
-            VALUE "ProductVersion", "0.4.0.0"
+            VALUE "ProductVersion", "0.4.1.0"
         END
     END
     BLOCK "VarFileInfo"

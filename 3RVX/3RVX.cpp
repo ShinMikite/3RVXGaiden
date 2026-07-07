@@ -66,7 +66,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         return EXIT_FAILURE;
     }
 
-    /* Tell the program to initialize */
+    /* Tell the program to initialize once the message loop is running. */
     PostMessage(mainWnd.Handle(), _3RVX::WM_3RVX_CTRL, _3RVX::MSG_LOAD, NULL);
 
     /* Register for session change notifications */

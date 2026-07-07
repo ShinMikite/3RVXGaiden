@@ -80,18 +80,48 @@ void HotkeyManager::Shutdown() {
 }
 
 bool HotkeyManager::Hook() {
-    _mouseHook = SetWindowsHookEx(WH_MOUSE_LL,
-        LowLevelMouseProc, NULL, NULL);
+    for (int attempt = 0; attempt < 3; ++attempt) {
+        if (_mouseHook == NULL) {
+            _mouseHook = SetWindowsHookEx(WH_MOUSE_LL,
+                LowLevelMouseProc, NULL, NULL);
+            if (_mouseHook == NULL) {
+                CLOG(L"Failed to install mouse hook on attempt %d",
+                    attempt + 1);
+                Logger::LogLastError();
+            }
+        }
 
-    _keyHook = SetWindowsHookEx(WH_KEYBOARD_LL,
-        LowLevelKeyboardProc, NULL, NULL);
+        if (_keyHook == NULL) {
+            _keyHook = SetWindowsHookEx(WH_KEYBOARD_LL,
+                LowLevelKeyboardProc, NULL, NULL);
+            if (_keyHook == NULL) {
+                CLOG(L"Failed to install keyboard hook on attempt %d",
+                    attempt + 1);
+                Logger::LogLastError();
+            }
+        }
 
-    return _mouseHook && _keyHook;
+        if (_mouseHook != NULL && _keyHook != NULL) {
+            return true;
+        }
+
+        Sleep(50);
+    }
+
+    return false;
 }
 
 bool HotkeyManager::Unhook() {
-    BOOL unMouse = UnhookWindowsHookEx(_mouseHook);
-    BOOL unKey = UnhookWindowsHookEx(_keyHook);
+    BOOL unMouse = TRUE;
+    BOOL unKey = TRUE;
+    if (_mouseHook != NULL) {
+        unMouse = UnhookWindowsHookEx(_mouseHook);
+        _mouseHook = NULL;
+    }
+    if (_keyHook != NULL) {
+        unKey = UnhookWindowsHookEx(_keyHook);
+        _keyHook = NULL;
+    }
     return unMouse && unKey;
 }
 
@@ -316,11 +346,17 @@ HotkeyManager::MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
 LRESULT CALLBACK
 HotkeyManager::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (HotkeyManager::instance == NULL) {
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
     return HotkeyManager::instance->MouseProc(nCode, wParam, lParam);
 }
 
 LRESULT CALLBACK
 HotkeyManager::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (HotkeyManager::instance == NULL) {
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
     return HotkeyManager::instance->KeyProc(nCode, wParam, lParam);
 }
 

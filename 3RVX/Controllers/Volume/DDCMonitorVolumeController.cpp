@@ -39,8 +39,11 @@ DDCMonitorVolumeController::DDCMonitorVolumeController(HMONITOR monitor) {
         if (SupportsVolumeVCP(monitors[i], &current, &maximum)) {
             selectedMonitor = (int) i;
             _monitorHandle = monitors[i].hPhysicalMonitor;
+            _hasMonitorHandle = true;
             _deviceName = monitors[i].szPhysicalMonitorDescription;
             _maxVolume = maximum > 0 ? maximum : 100;
+            _currentVolume = current;
+            _hasVolumeValue = true;
             _deviceEnabled = true;
             CLOG(L"Using monitor volume: %s [%d/%d]",
                 _deviceName.c_str(), current, _maxVolume);
@@ -55,7 +58,7 @@ DDCMonitorVolumeController::DDCMonitorVolumeController(HMONITOR monitor) {
     }
     delete[] monitors;
 
-    if (_monitorHandle == NULL) {
+    if (!_hasMonitorHandle) {
         CLOG(L"No compatible monitor volume VCP control found");
     }
 }
@@ -66,23 +69,28 @@ DDCMonitorVolumeController(monitor.Handle()) {
 }
 
 DDCMonitorVolumeController::~DDCMonitorVolumeController() {
-    if (_monitorHandle != NULL) {
+    if (_hasMonitorHandle) {
         DestroyPhysicalMonitor(_monitorHandle);
     }
 }
 
 float DDCMonitorVolumeController::Volume() {
-    if (!_deviceEnabled || _monitorHandle == NULL) {
+    if (!_deviceEnabled || !_hasMonitorHandle) {
         return 0.0f;
     }
 
     DWORD current = 0;
     DWORD maximum = 0;
     if (!TryReadVolume(_monitorHandle, &current, &maximum)) {
-        return 0.0f;
+        if (!_hasVolumeValue || _maxVolume == 0) {
+            return 0.0f;
+        }
+        return (float) _currentVolume / (float) _maxVolume;
     }
 
     _maxVolume = maximum > 0 ? maximum : _maxVolume;
+    _currentVolume = current;
+    _hasVolumeValue = true;
     if (_maxVolume == 0) {
         return 0.0f;
     }
@@ -91,7 +99,7 @@ float DDCMonitorVolumeController::Volume() {
 }
 
 void DDCMonitorVolumeController::Volume(float vol) {
-    if (!_deviceEnabled || _monitorHandle == NULL) {
+    if (!_deviceEnabled || !_hasMonitorHandle) {
         return;
     }
 
@@ -103,12 +111,19 @@ void DDCMonitorVolumeController::Volume(float vol) {
     DWORD newValue = (DWORD) std::round(vol * _maxVolume);
     if (SetVCPFeature(_monitorHandle, VCP_AUDIO_VOLUME, newValue) == FALSE) {
         Logger::LogLastError();
+    } else {
+        _currentVolume = newValue;
+        _hasVolumeValue = true;
     }
 }
 
 DWORD DDCMonitorVolumeController::VolumeValue() {
-    if (!_deviceEnabled || _monitorHandle == NULL) {
+    if (!_deviceEnabled || !_hasMonitorHandle) {
         return 0;
+    }
+
+    if (_hasVolumeValue) {
+        return _currentVolume;
     }
 
     DWORD current = 0;
@@ -118,11 +133,13 @@ DWORD DDCMonitorVolumeController::VolumeValue() {
     }
 
     _maxVolume = maximum > 0 ? maximum : _maxVolume;
+    _currentVolume = current;
+    _hasVolumeValue = true;
     return current;
 }
 
 void DDCMonitorVolumeController::VolumeValue(int value) {
-    if (!_deviceEnabled || _monitorHandle == NULL) {
+    if (!_deviceEnabled || !_hasMonitorHandle) {
         return;
     }
 
@@ -134,6 +151,9 @@ void DDCMonitorVolumeController::VolumeValue(int value) {
 
     if (SetVCPFeature(_monitorHandle, VCP_AUDIO_VOLUME, (DWORD) value) == FALSE) {
         Logger::LogLastError();
+    } else {
+        _currentVolume = (DWORD) value;
+        _hasVolumeValue = true;
     }
 }
 

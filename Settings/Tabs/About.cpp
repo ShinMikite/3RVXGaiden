@@ -7,7 +7,7 @@
 
 void About::Initialize() {
     _title = new Label(LBL_TITLE, *this, false);
-    _title->Text(L"3RVXGaiden v0.4.0-preview");
+    _title->Text(L"3RVXGaiden v0.4.1-preview");
 }
 
 void About::LoadSettings() {

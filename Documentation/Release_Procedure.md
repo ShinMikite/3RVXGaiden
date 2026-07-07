@@ -21,12 +21,10 @@ and app-control hotkeys.
 4. Confirm the Hotkeys tab only exposes supported volume, monitor-volume, and app-control actions.
 5. Create a portable package containing the release `3RVX.exe`, `Settings.exe`, release-ready `Languages`, `Skins`, default settings, README, changelog, license, security policy, and antivirus false-positive guide.
 6. Calculate the SHA256 hash for the portable zip and publish it in `SHA256SUMS.txt`.
-7. Commit the release changes and tag the commit, for example `v0.4.0-preview`.
+7. Commit the release changes and tag the commit, for example `v0.4.1-preview`.
 8. Push the commit and tag to GitHub.
 9. Create or update the GitHub Release for the tag.
 10. Upload only the current portable zip, `SHA256SUMS.txt`, plus the auto-generated source archives.
 11. Include highlights, the SHA256 hash, and a changelog link in the release notes.
 
 Automatic updates are not built into 3RVXGaiden. GitHub Releases are the supported distribution channel for now.
-
-The WiX installer files are retained for future installer work, but preview releases are currently portable-first.

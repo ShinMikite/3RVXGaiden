@@ -43,6 +43,10 @@ void Hotkeys::Initialize() {
     _monitorLabel = new Label(LBL_MONITORTARGET, *this);
     _monitorCombo = new ComboBox(CMB_MONITORTARGET, *this);
     _monitorCombo->OnSelectionChange = [this]() {
+        if (_loading) {
+            return false;
+        }
+
         int selectionIdx = _keyList->Selection();
         HotkeyInfo *current = CurrentHotkeyInfo();
         if (selectionIdx == -1 || current == NULL
@@ -70,6 +74,7 @@ void Hotkeys::Initialize() {
 }
 
 void Hotkeys::LoadSettings() {
+    _loading = true;
     Settings *settings = Settings::Instance();
     _translator = settings->Translator();
 
@@ -129,6 +134,7 @@ void Hotkeys::LoadSettings() {
 
     _keyList->Selection(0);
     LoadSelection();
+    _loading = false;
 }
 
 void Hotkeys::SaveSettings() {
@@ -481,6 +487,10 @@ int Hotkeys::SelectedAction() {
 /// --------------
 
 void Hotkeys::OnKeyListItemChange(NMLISTVIEW *lv) {
+    if (_loading) {
+        return;
+    }
+
     if (lv->uChanged & LVIF_STATE) {
         if (lv->uNewState & LVIS_SELECTED) {
             int index = lv->iItem;
@@ -548,6 +558,10 @@ bool Hotkeys::OnKeysButtonClick() {
 }
 
 bool Hotkeys::OnActionChange() {
+    if (_loading) {
+        return false;
+    }
+
     int actionIdx = SelectedAction();
     if (actionIdx < 0) {
         return false;
@@ -578,6 +592,10 @@ bool Hotkeys::OnArgButtonClick() {
 }
 
 bool Hotkeys::OnArgComboChange() {
+    if (_loading) {
+        return false;
+    }
+
     int selectionIdx = _keyList->Selection();
     HotkeyInfo *current = &_keyInfo[selectionIdx];
 
@@ -603,6 +621,10 @@ bool Hotkeys::OnArgComboChange() {
 }
 
 bool Hotkeys::OnArgCheckChange() {
+    if (_loading) {
+        return false;
+    }
+
     int selectionIdx = _keyList->Selection();
     if (selectionIdx == -1) {
         return false;
@@ -642,6 +664,10 @@ bool Hotkeys::OnArgCheckChange() {
 }
 
 bool Hotkeys::OnArgEditTextChange() {
+    if (_loading) {
+        return FALSE;
+    }
+
     if (_argEdit->Enabled() == false || _argEdit->Visible() == false) {
         return FALSE;
     }

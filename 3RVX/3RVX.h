@@ -42,22 +42,32 @@ public:
 
     static void Message(WPARAM wParam, LPARAM lParam, bool post = false) {
         HWND masterWnd = MasterHwnd();
+        if (masterWnd == NULL) {
+            return;
+        }
 
         if (post) {
             PostMessage(masterWnd, WM_3RVX_CTRL, wParam, lParam);
         } else {
-            SendMessage(masterWnd, WM_3RVX_CTRL, wParam, lParam);
+            DWORD_PTR result = 0;
+            SendMessageTimeout(masterWnd, WM_3RVX_CTRL, wParam, lParam,
+                SMTO_ABORTIFHUNG, 5000, &result);
         }
     }
 
     static void SettingsMessage(
             WPARAM wParam, LPARAM lParam, bool post = false) {
         HWND masterWnd = MasterSettingsHwnd();
+        if (masterWnd == NULL) {
+            return;
+        }
 
         if (post) {
             PostMessage(masterWnd, WM_3RVX_SETTINGSCTRL, wParam, lParam);
         } else {
-            SendMessage(masterWnd, WM_3RVX_SETTINGSCTRL, wParam, lParam);
+            DWORD_PTR result = 0;
+            SendMessageTimeout(masterWnd, WM_3RVX_SETTINGSCTRL, wParam, lParam,
+                SMTO_ABORTIFHUNG, 5000, &result);
         }
     }
 

@@ -24,6 +24,8 @@ public:
     virtual void SaveSettings() = 0;
 
 protected:
+    bool _loading = false;
+
     /// <summary>
     /// Performs intitialization for the tab page, similar to a constructor.
     /// Since tab page windows are created on demand, this method could be
