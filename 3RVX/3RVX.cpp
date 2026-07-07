@@ -137,6 +137,8 @@ void _3RVX::ProcessHotkeys(HotkeyInfo &hki) {
     case HotkeyInfo::SetVolume:
     case HotkeyInfo::Mute:
     case HotkeyInfo::VolumeSlider:
+    case HotkeyInfo::IncreaseMonitorVolume:
+    case HotkeyInfo::DecreaseMonitorVolume:
         if (_vOSD) {
             _vOSD->ProcessHotkeys(hki);
         }
@@ -167,7 +169,13 @@ LRESULT _3RVX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_HOTKEY: {
         CLOG(L"Hotkey: %d", (int) wParam);
-        HotkeyInfo hki = _hotkeys[(int) wParam];
+        auto hotkey = _hotkeys.find((int) wParam);
+        if (hotkey == _hotkeys.end()) {
+            CLOG(L"Ignoring unknown hotkey id: %d", (int) wParam);
+            break;
+        }
+
+        HotkeyInfo hki = hotkey->second;
         ProcessHotkeys(hki);
         break;
     }

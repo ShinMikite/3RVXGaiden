@@ -77,6 +77,8 @@ private:
 
     bool Hook();
     bool Unhook();
+    bool UseHookForKeyboardHotkey(int keyCombination);
+    int RegisteredHookCombination(int keyCombination);
 
     LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam);
     static LRESULT CALLBACK 

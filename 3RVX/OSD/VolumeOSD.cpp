@@ -5,12 +5,17 @@
 
 #pragma comment(lib, "Wtsapi32.lib")
 
+#include <cmath>
 #include <string>
+#include <unordered_map>
+#include <vector>
 #include <Wtsapi32.h>
 
 #include "../3RVX.h"
+#include "../Controllers/Volume/DDCMonitorVolumeController.h"
 #include "../Controllers/Volume/CurveTransformer.h"
 #include "../Controllers/Volume/VolumeLimiter.h"
+#include "../DisplayManager.h"
 #include "../HotkeyInfo.h"
 #include "../LanguageTranslator.h"
 #include "../MeterWnd/LayeredWnd.h"
@@ -23,8 +28,28 @@
 #include "../SoundPlayer.h"
 #include "../HideWin10VolumeOSD.h"
 
+static void AddMonitorCandidate(std::vector<Monitor> &monitors, Monitor monitor) {
+    if (monitor.Handle() == NULL) {
+        return;
+    }
+
+    for (Monitor candidate : monitors) {
+        if (candidate.Handle() == monitor.Handle()) {
+            return;
+        }
+    }
+
+    monitors.push_back(monitor);
+}
+
 VolumeOSD::VolumeOSD() :
 OSD(L"3RVX-VolumeDispatcher"),
+_volumeCtrl(nullptr),
+_monitorVolumeCtrl(nullptr),
+_monitorSession(false),
+_subscribeVolEvents(false),
+_unlockUnmute(false),
+_monitorVolumePositioned(false),
 _mWnd(L"3RVX-VolumeOSD", L"3RVX-VolumeOSD"),
 _muteWnd(L"3RVX-MuteOSD", L"3RVX-MuteOSD") {
 
@@ -112,6 +137,7 @@ VolumeOSD::~VolumeOSD() {
     DestroyMenu(_menu);
     delete _icon;
     delete _volumeSlider;
+    delete _monitorVolumeCtrl;
     delete _callbackMeter;
     for (VolumeTransformation *trans : _volumeTransformations) {
         delete trans;
@@ -328,20 +354,43 @@ void VolumeOSD::ProcessHotkeys(HotkeyInfo &hki) {
             SendMessage(Window::Handle(), MSG_NOTIFYICON, NULL, WM_LBUTTONUP);
         }
         break;
+
+    case HotkeyInfo::IncreaseMonitorVolume:
+    case HotkeyInfo::DecreaseMonitorVolume:
+        ProcessMonitorVolumeHotkeys(hki);
+        break;
     }
 }
 
 void VolumeOSD::ProcessVolumeHotkeys(HotkeyInfo &hki) {
-    float currentVol = _volumeCtrl->Volume();
+    ChangeVolume(hki, _volumeCtrl);
+
+    /* Tell 3RVX that we changed the volume */
+    SendMessage(Window::Handle(), VolumeController::MSG_VOL_CHNG,
+        NULL, (LPARAM) 1);
+}
+
+void VolumeOSD::ProcessMonitorVolumeHotkeys(HotkeyInfo &hki) {
+    if (!EnsureMonitorVolumeController(hki)) {
+        return;
+    }
+
+    ChangeMonitorVolume(hki);
+}
+
+void VolumeOSD::ChangeVolume(HotkeyInfo &hki, VolumeController *volumeCtrl) {
+    float currentVol = volumeCtrl->Volume();
+    _callbackMeter->Value(currentVol);
     HotkeyInfo::VolumeKeyArgTypes type = HotkeyInfo::VolumeArgType(hki);
 
     if (type == HotkeyInfo::VolumeKeyArgTypes::Percentage) {
         /* Deal with percentage-based amounts */
         float amount = ((float) hki.ArgToDouble(0) / 100.0f);
-        if (hki.action == HotkeyInfo::HotkeyActions::DecreaseVolume) {
+        if (hki.action == HotkeyInfo::HotkeyActions::DecreaseVolume
+                || hki.action == HotkeyInfo::HotkeyActions::DecreaseMonitorVolume) {
             amount = -amount;
         }
-        _volumeCtrl->Volume(currentVol + amount);
+        volumeCtrl->Volume(currentVol + amount);
     } else {
         /* Unit-based amounts */
         double unitIncrement = 1.0;
@@ -350,7 +399,8 @@ void VolumeOSD::ProcessVolumeHotkeys(HotkeyInfo &hki) {
             currentUnit = 0;
         }
 
-        if (hki.action == HotkeyInfo::DecreaseVolume) {
+        if (hki.action == HotkeyInfo::DecreaseVolume
+                || hki.action == HotkeyInfo::DecreaseMonitorVolume) {
             unitIncrement = -1.0;
         }
 
@@ -363,19 +413,113 @@ void VolumeOSD::ProcessVolumeHotkeys(HotkeyInfo &hki) {
         if (unitIncrement - (int) unitIncrement < 0.0001) {
             /* The specified unit increment is an integer, so we "snap" the
              * volume to the nearest unit */
-            _volumeCtrl->Volume(
+            volumeCtrl->Volume(
                 (float) (currentUnit + unitIncrement) * _defaultIncrement);
         } else {
             /* The user specified a partial unit value (e.g., 1.3) so we don't
              * "snap" the volume to the nearest unit. */
-            _volumeCtrl->Volume(_volumeCtrl->Volume()
+            volumeCtrl->Volume(volumeCtrl->Volume()
                 + ((float) (unitIncrement * _defaultIncrement)));
         }
     }
+}
 
-    /* Tell 3RVX that we changed the volume */
-    SendMessage(Window::Handle(), VolumeController::MSG_VOL_CHNG,
-        NULL, (LPARAM) 1);
+void VolumeOSD::ChangeMonitorVolume(HotkeyInfo &hki) {
+    HotkeyInfo::VolumeKeyArgTypes type = HotkeyInfo::VolumeArgType(hki);
+    float currentVol = _monitorVolumeCtrl->Volume();
+
+    if (type == HotkeyInfo::VolumeKeyArgTypes::Percentage) {
+        float amount = ((float) hki.ArgToDouble(0) / 100.0f);
+        if (hki.action == HotkeyInfo::DecreaseMonitorVolume) {
+            amount = -amount;
+        }
+        _monitorVolumeCtrl->Volume(currentVol + amount);
+        return;
+    }
+
+    double unitIncrement = 1.0;
+    if (hki.action == HotkeyInfo::DecreaseMonitorVolume) {
+        unitIncrement = -1.0;
+    }
+    if (type == HotkeyInfo::VolumeKeyArgTypes::Units) {
+        unitIncrement *= hki.ArgToDouble(0);
+    }
+
+    int currentUnit = (int) _monitorVolumeCtrl->VolumeValue();
+    int targetUnit = currentUnit + (int) std::round(unitIncrement);
+    _monitorVolumeCtrl->VolumeValue(targetUnit);
+}
+
+bool VolumeOSD::EnsureMonitorVolumeController(HotkeyInfo &hki) {
+    std::wstring monitorName = L"";
+    if (hki.HasArg(2)) {
+        monitorName = hki.args[2];
+    }
+
+    if (_monitorVolumeCtrl != nullptr && monitorName == _monitorVolumeTarget) {
+        return _monitorVolumeCtrl->DeviceEnabled();
+    }
+
+    delete _monitorVolumeCtrl;
+    _monitorVolumeCtrl = nullptr;
+    _monitorVolumeTarget = monitorName;
+
+    std::vector<Monitor> monitors;
+    DisplayManager::UpdateMonitorMap();
+    std::unordered_map<std::wstring, Monitor> map = DisplayManager::MonitorMap();
+    if (monitorName != L"") {
+        for (auto it = map.begin(); it != map.end(); ++it) {
+            if (monitorName == it->first
+                    || monitorName == it->second.DeviceName()) {
+                AddMonitorCandidate(monitors, it->second);
+                break;
+            }
+        }
+    }
+
+    POINT cursor = {};
+    if (GetCursorPos(&cursor)) {
+        AddMonitorCandidate(
+            monitors, DisplayManager::MonitorAtPoint(cursor));
+    }
+
+    AddMonitorCandidate(
+        monitors, DisplayManager::MonitorAtWindow(GetForegroundWindow()));
+
+    AddMonitorCandidate(monitors, DisplayManager::Primary());
+
+    for (auto it = map.begin(); it != map.end(); ++it) {
+        AddMonitorCandidate(monitors, it->second);
+    }
+
+    for (Monitor monitor : monitors) {
+        _monitorVolumeCtrl = new DDCMonitorVolumeController(monitor);
+        if (_monitorVolumeCtrl->DeviceEnabled()) {
+            _monitorVolumeMonitor = monitor;
+            return true;
+        }
+
+        delete _monitorVolumeCtrl;
+        _monitorVolumeCtrl = nullptr;
+    }
+
+    return false;
+}
+
+void VolumeOSD::ShowMonitorVolumeChange() {
+    float v = _monitorVolumeCtrl->Volume();
+    MeterLevels(v);
+
+    if (_volumeSlider->Visible() == false) {
+        _mWnd.DeleteClones();
+        PositionWindow(_monitorVolumeMonitor, _mWnd);
+        _monitorVolumePositioned = true;
+        Show(v == 0.0f);
+        if (v > 0.0f && _soundPlayer) {
+            _soundPlayer->Play();
+        }
+        HideOthers(Volume);
+    }
 }
 
 void VolumeOSD::UpdateVolumeState() {
@@ -403,6 +547,10 @@ void VolumeOSD::OnDeviceChange() {
 void VolumeOSD::OnDisplayChange() {
     InitMeterWnd(_mWnd);
     InitMeterWnd(_muteWnd);
+    delete _monitorVolumeCtrl;
+    _monitorVolumeCtrl = nullptr;
+    _monitorVolumeTarget = L"";
+    _monitorVolumePositioned = false;
 }
 
 void VolumeOSD::OnMenuEvent(WPARAM wParam) {
@@ -479,6 +627,11 @@ void VolumeOSD::OnVolumeChange(HWND hWnd, WPARAM wParam, LPARAM lParam) {
     _volumeSlider->MeterLevels(v);
     UpdateIcon();
     HideWin10VolumeOSD::Init();
+
+    if (_monitorVolumePositioned) {
+        InitMeterWnd(_mWnd);
+        _monitorVolumePositioned = false;
+    }
 
     if (_subscribeVolEvents == false && lParam == 0) {
         return;

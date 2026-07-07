@@ -4,7 +4,6 @@
   <language>English</language>
 
   <audioDeviceID></audioDeviceID>
-
   <notifyIcon>true</notifyIcon>
   <soundEffects>true</soundEffects>
   <onTop>true</onTop>
@@ -23,5 +22,7 @@
     <hotkey combination="524296">
       <action id="100"></action>
     </hotkey>
+    <hotkey combination="131503" action="Increase Monitor Volume" />
+    <hotkey combination="131502" action="Decrease Monitor Volume" />
   </hotkeys>
 </settings>

@@ -42,6 +42,8 @@ public:
         DisableOSD,
         Settings,
         Exit,
+        IncreaseMonitorVolume,
+        DecreaseMonitorVolume,
     };
     static std::vector<std::wstring> ActionNames;
     static bool IsSupportedAction(HotkeyActions action);

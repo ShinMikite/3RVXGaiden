@@ -36,8 +36,6 @@ typedef struct DLGTEMPLATEEX
 
 /* Needed to determine whether the Apply button is enabled/disabled */
 static const int IDD_APPLYNOW = 0x3021;
-static const int IDT_RELOAD_3RVX = 1;
-static const UINT RELOAD_3RVX_DELAY_MS = 250;
 
 const wchar_t *MUTEX_NAME = L"Local\\3RVXSettings";
 HANDLE mutex;
@@ -161,12 +159,7 @@ LRESULT SettingsUI::WndProc(
         HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
     if (message == WM_DESTROY) {
-        KillTimer(hWnd, IDT_RELOAD_3RVX);
         PostQuitMessage(0);
-    } else if (message == WM_TIMER && wParam == IDT_RELOAD_3RVX) {
-        KillTimer(hWnd, IDT_RELOAD_3RVX);
-        CLOG(L"Notifying 3RVX process of delayed settings change");
-        _3RVX::Message(_3RVX::MSG_LOAD, NULL, true);
     } else if (message == _3RVX::WM_3RVX_SETTINGSCTRL) {
         switch (wParam) {
         case _3RVX::MSG_ACTIVATE:
@@ -185,15 +178,12 @@ LRESULT SettingsUI::WndProc(
                     tab->SaveSettings();
                 }
             }
-            Settings::Instance()->Save();
-
-            if (lParam == PSBTN_APPLYNOW && relaunch == false) {
-                CLOG(L"Scheduling delayed 3RVX settings reload");
-                SetTimer(hWnd, IDT_RELOAD_3RVX, RELOAD_3RVX_DELAY_MS, NULL);
-            } else {
+            int saveResult = Settings::Instance()->Save();
+            if (saveResult == 0) {
                 CLOG(L"Notifying 3RVX process of settings change");
-                _3RVX::Message(_3RVX::MSG_LOAD, NULL, true);
+                _3RVX::Message(_3RVX::MSG_LOAD, NULL);
             }
+
             break;
         }
     }

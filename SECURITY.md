@@ -17,23 +17,9 @@ available for this repository, or contact the maintainer through GitHub.
 Antivirus False Positives
 -------------------------
 
-3RVXGaiden is an unsigned native Windows volume utility. It registers global
-hotkeys, can optionally run at startup, and can control system volume. Those
-behaviors are expected for this app, but they can look suspicious to antivirus
-heuristics, especially before a release has built reputation.
+3RVXGaiden is an unsigned native Windows volume utility, so some antivirus
+engines may flag new releases before they build reputation.
 
-The supported app surface is intentionally limited to volume OSD behavior,
-volume hotkeys, the volume slider, and basic app-control hotkeys.
-
-Official release zips are built by GitHub Actions and published on the GitHub
-Releases page. Release assets include SHA256 information so users can verify
-that their download matches the published build.
-
-If Microsoft Defender incorrectly detects an official release, submit the file
-to Microsoft for analysis:
-
-https://www.microsoft.com/en-us/wdsi/filesubmission
-
-Longer-term, code signing is the best way to improve Windows trust prompts and
-reduce reputation-based warnings. Preview builds may remain unsigned until a
-code-signing path is available.
+Expected app behaviors, release verification steps, and false-positive
+submission guidance are documented in
+[Antivirus False Positives](Documentation/AV_False_Positives.md).

@@ -4,7 +4,8 @@
 Use this checklist when publishing a new preview release through GitHub.
 
 3RVXGaiden is volume-focused. Release packages should only expose the supported
-volume OSD, mute OSD, volume slider, volume hotkeys, and app-control hotkeys.
+volume OSD, mute OSD, volume slider, volume hotkeys, monitor volume hotkeys,
+and app-control hotkeys.
 
 1. Update version information for both applications:
    * `3RVX/3RVX.rc`
@@ -17,10 +18,10 @@ volume OSD, mute OSD, volume slider, volume hotkeys, and app-control hotkeys.
    * Volume
    * Hotkeys
    * About
-4. Confirm the Hotkeys tab only exposes supported volume/app-control actions.
-5. Create a portable package containing the release `3RVX.exe`, `Settings.exe`, release-ready `Languages`, `Skins`, and default settings.
+4. Confirm the Hotkeys tab only exposes supported volume, monitor-volume, and app-control actions.
+5. Create a portable package containing the release `3RVX.exe`, `Settings.exe`, release-ready `Languages`, `Skins`, default settings, README, changelog, license, security policy, and antivirus false-positive guide.
 6. Calculate the SHA256 hash for the portable zip and publish it in `SHA256SUMS.txt`.
-7. Commit the release changes and tag the commit, for example `v0.3.0-preview`.
+7. Commit the release changes and tag the commit, for example `v0.4.0-preview`.
 8. Push the commit and tag to GitHub.
 9. Create or update the GitHub Release for the tag.
 10. Upload only the current portable zip, `SHA256SUMS.txt`, plus the auto-generated source archives.

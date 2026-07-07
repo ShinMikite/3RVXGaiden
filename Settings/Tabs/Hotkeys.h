@@ -37,6 +37,9 @@ protected:
 
     void DefaultArgControlStates();
     void VolumeArgControlStates(HotkeyInfo &selection);
+    void MonitorArgControlStates(HotkeyInfo &selection);
+    void AddMonitorOption(std::wstring label, std::wstring monitorId);
+    bool IsMonitorVolumeAction(HotkeyInfo::HotkeyActions action);
 
 private:
     /* Control Event Handlers */
@@ -66,6 +69,8 @@ protected:
     ComboBox *_action;
 
     Label *_argLabel;
+    Label *_monitorLabel;
+    ComboBox *_monitorCombo;
     Checkbox *_argCheck;
     ComboBox *_argCombo;
     EditBox *_argEdit;
@@ -76,6 +81,11 @@ protected:
     std::wstring _hotkeysColumnStr = L"Hotkeys";
     std::wstring _actionColumnStr = L"Action";
     std::wstring _amountVolArgStr = L"Amount:";
+    std::wstring _monitorArgStr = L"Monitor:";
+    std::wstring _autoMonitorStr = L"Auto";
+    std::wstring _disconnectedMonitorStr = L"Saved Monitor (not connected)";
     std::wstring _unitsVolArgStr = L"Volume Units";
+    std::wstring _unitsMonitorArgStr = L"Monitor Units";
     std::wstring _percentVolArgStr = L"Percent";
+    std::vector<std::wstring> _monitorIds;
 };

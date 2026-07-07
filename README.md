@@ -9,7 +9,9 @@ This helps keep the OSD on the selected monitor when another display is disconne
 
 It also includes an `OEM` skin that closely matches the default Windows 11 volume bar.
 
-3RVXGaiden intentionally focuses on volume OSD behavior, volume hotkeys, the volume slider, and supporting app controls. Inherited unfinished modules such as brightness, eject, keyboard status, generic run-command hotkeys, virtual-key remapping, and media-key remapping are not part of the supported app surface.
+3RVXGaiden intentionally focuses on volume OSD behavior, volume hotkeys, monitor volume hotkeys, the volume slider, and supporting app controls. Inherited unfinished modules such as brightness, eject, keyboard status, generic run-command hotkeys, virtual-key remapping, and media-key remapping are not part of the supported app surface.
+
+Monitor volume hotkeys use Windows DDC/CI monitor APIs and the MCCS audio-volume VCP code (`0x62`). This can control monitor OSD volume on displays that expose audio volume over the current input, including DisplayPort or HDMI when supported by the monitor, GPU driver, and cable path. Configure these actions from **Settings -> Hotkeys** with **Increase Monitor Volume** or **Decrease Monitor Volume**, then choose the target monitor in the hotkey editor.
 
 See [3RVXGaiden Vision](Documentation/Vision.md) for the current project scope.
 

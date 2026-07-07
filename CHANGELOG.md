@@ -1,6 +1,23 @@
 3RVX Changelog
 ==============
 
+3RVXGaiden v0.4.0-preview
+-------------------------
+* Added DDC/CI monitor volume hotkey actions: Increase Monitor Volume and Decrease Monitor Volume.
+* Added a monitor picker to the Hotkeys editor for monitor-volume actions.
+* Monitor volume actions support monitor-native units and percentage increments.
+* Media volume keys are handled through the low-level keyboard hook when used as hotkeys so monitor-volume shortcuts can be swallowed instead of also changing Windows audio.
+* Settings Apply/OK now reloads the running app synchronously after saving so hotkey changes become active immediately.
+* Removed the separate monitor-control settings tab in favor of per-hotkey monitor targeting.
+* Added DisplayPort/HDMI DDC/CI monitor-volume support through Windows Dxva2 monitor APIs.
+
+3RVXGaiden v0.3.0-preview
+-------------------------
+* Focused the app surface around volume OSD behavior, volume hotkeys, the volume slider, and app-control hotkeys.
+* Added the OEM skin modeled after the Windows 11 volume flyout.
+* Improved multi-monitor OSD targeting by saving stable monitor identities.
+* Disabled automatic update behavior in favor of GitHub Releases.
+
 Beta 11 (2.9.3)
 ---------------
 * Brightness OSD

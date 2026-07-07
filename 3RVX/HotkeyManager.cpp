@@ -53,7 +53,10 @@ HotkeyManager *HotkeyManager::Instance(HWND notifyWnd) {
 }
 
 HotkeyManager::HotkeyManager() :
-_fixWin(false) {
+_fixWin(false),
+_modifiers(0),
+_keyHook(NULL),
+_mouseHook(NULL) {
 
 }
 
@@ -113,6 +116,12 @@ void HotkeyManager::Register(int keyCombination) {
         return;
     }
 
+    if (UseHookForKeyboardHotkey(keyCombination)) {
+        CLOG(L"Registered new hooked keyboard hotkey: %d", keyCombination);
+        _hookCombinations.insert(keyCombination);
+        return;
+    }
+
     /* keyboard-only hotkeys; use WinAPI */
     int mods = (0xF0000 & keyCombination) >> 16;
     if (!RegisterHotKey(_notifyWnd, keyCombination, mods, vk)) {
@@ -136,6 +145,10 @@ bool HotkeyManager::Unregister(int keyCombination) {
     }
 
     _keyCombinations.erase(keyCombination);
+    if (_hookCombinations.erase(keyCombination) > 0) {
+        return true;
+    }
+
     if ((keyCombination >> 20) == 0) {
         /* This hotkey isn't mouse-based; unregister with Windows */
         if (!UnregisterHotKey(_notifyWnd, keyCombination)) {
@@ -162,10 +175,6 @@ HotkeyManager::KeyProc(int nCode, WPARAM wParam, LPARAM lParam) {
             }
         }
 
-        if (_hookCombinations.size() <= 0) {
-            return CallNextHookEx(NULL, nCode, wParam, lParam);
-        }
-
         if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
             KBDLLHOOKSTRUCT *kbInfo = (KBDLLHOOKSTRUCT *) lParam;
 
@@ -178,11 +187,21 @@ HotkeyManager::KeyProc(int nCode, WPARAM wParam, LPARAM lParam) {
             } else {
                 /* Is this an extended key? */
                 int ext = (kbInfo->flags & 0x1) << EXT_OFFSET;
-                int keys = _modifiers | ext | vk;
-                if (_hookCombinations.count(keys) > 0) {
-                    SendMessage(_notifyWnd, WM_HOTKEY,
-                        keys, _modifiers >> MOD_OFFSET);
-                    return (LRESULT) 1;
+                int asyncModifiers = HotkeyManager::ModifiersAsync();
+                int modifierCandidates[] = {
+                    asyncModifiers,
+                    _modifiers,
+                    asyncModifiers | _modifiers,
+                };
+
+                for (int modifierCandidate : modifierCandidates) {
+                    int keys = modifierCandidate | ext | vk;
+                    int registered = RegisteredHookCombination(keys);
+                    if (registered > 0) {
+                        SendMessage(_notifyWnd, WM_HOTKEY,
+                            registered, registered & 0xF0000);
+                        return (LRESULT) 1;
+                    }
                 }
             }
         }
@@ -191,13 +210,43 @@ HotkeyManager::KeyProc(int nCode, WPARAM wParam, LPARAM lParam) {
             KBDLLHOOKSTRUCT *kbInfo = (KBDLLHOOKSTRUCT *) lParam;
             int m = HotkeyManager::IsModifier(kbInfo->vkCode);
             if (m) {
-                _modifiers ^= m;
+                _modifiers &= ~m;
             }
             return CallNextHookEx(NULL, nCode, wParam, lParam);
         }
     }
 
     return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
+bool HotkeyManager::UseHookForKeyboardHotkey(int keyCombination) {
+    int vk = 0xFF & keyCombination;
+    switch (vk) {
+    case VK_VOLUME_MUTE:
+    case VK_VOLUME_DOWN:
+    case VK_VOLUME_UP:
+        return true;
+    }
+
+    return false;
+}
+
+int HotkeyManager::RegisteredHookCombination(int keyCombination) {
+    if (_hookCombinations.count(keyCombination) > 0) {
+        return keyCombination;
+    }
+
+    int keysWithoutExt = keyCombination & ~(0x1 << EXT_OFFSET);
+    if (_hookCombinations.count(keysWithoutExt) > 0) {
+        return keysWithoutExt;
+    }
+
+    int keysWithExt = keyCombination | (0x1 << EXT_OFFSET);
+    if (_hookCombinations.count(keysWithExt) > 0) {
+        return keysWithExt;
+    }
+
+    return 0;
 }
 
 LRESULT CALLBACK

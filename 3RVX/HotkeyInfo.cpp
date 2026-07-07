@@ -27,6 +27,8 @@ std::vector<std::wstring> HotkeyInfo::ActionNames = {
     L"Enable/Disable OSD",
     L"Open Settings Dialog",
     L"Exit 3RVX",
+    L"Increase Monitor Volume",
+    L"Decrease Monitor Volume",
 };
 
 std::vector<std::wstring> HotkeyInfo::MediaKeyNames = {
@@ -55,6 +57,8 @@ bool HotkeyInfo::IsSupportedAction(HotkeyActions action) {
     case SetVolume:
     case Mute:
     case VolumeSlider:
+    case IncreaseMonitorVolume:
+    case DecreaseMonitorVolume:
     case DisableOSD:
     case Settings:
     case Exit:
@@ -66,7 +70,7 @@ bool HotkeyInfo::IsSupportedAction(HotkeyActions action) {
 }
 
 HotkeyInfo::VolumeKeyArgTypes HotkeyInfo::VolumeArgType(HotkeyInfo &hki) {
-    if (hki.HasArgs() == false) {
+    if (hki.HasArg(0) == false || hki.args[0] == L"") {
         return VolumeKeyArgTypes::NoArgs;
     }
 
@@ -185,13 +189,21 @@ bool HotkeyInfo::Valid() {
     switch (action) {
     case HotkeyInfo::IncreaseVolume:
     case HotkeyInfo::DecreaseVolume:
+    case HotkeyInfo::IncreaseMonitorVolume:
+    case HotkeyInfo::DecreaseMonitorVolume:
     case HotkeyInfo::SetVolume: {
-        if (HasArgs() == false) {
+        if (HasArg(0) == false) {
             /* Don't do arg checking */
             break;
         }
 
         if (args[0] == L"") {
+            if (action == HotkeyInfo::IncreaseVolume
+                    || action == HotkeyInfo::DecreaseVolume
+                    || action == HotkeyInfo::IncreaseMonitorVolume
+                    || action == HotkeyInfo::DecreaseMonitorVolume) {
+                break;
+            }
             LogInvalid(L"No first argument");
             return false;
         }

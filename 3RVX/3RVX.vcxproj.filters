@@ -18,6 +18,9 @@
     <ClInclude Include="Controllers\Volume\CoreAudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Controllers\Volume\DDCMonitorVolumeController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="3RVX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -213,6 +216,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Controllers\Volume\CoreAudio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Controllers\Volume\DDCMonitorVolumeController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="3RVX.cpp">

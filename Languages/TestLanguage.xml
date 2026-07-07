@@ -270,8 +270,24 @@
     <translation>XXXXXX:</translation>
   </string>
   <string>
+    <original>Monitor:</original>
+    <translation>XXXXXXX:</translation>
+  </string>
+  <string>
+    <original>Auto</original>
+    <translation>XXXX</translation>
+  </string>
+  <string>
+    <original>Saved Monitor (not connected)</original>
+    <translation>XXXXX XXXXXXX (XXX XXXXXXXXX)</translation>
+  </string>
+  <string>
     <original>Volume Units</original>
     <translation>XXXXXX XXXXX</translation>
+  </string>
+  <string>
+    <original>Monitor Units</original>
+    <translation>XXXXXXX XXXXX</translation>
   </string>
   <string>
     <original>Percent</original>
@@ -334,6 +350,30 @@
   <string>
     <original>Decrease Volume {1} units</original>
     <translation>XXXXXXX XXXXXX {1} XXXXX</translation>
+  </string>
+  <string>
+    <original>Increase Monitor Volume</original>
+    <translation>XXXXXXXX XXXXXXX XXXXXX</translation>
+  </string>
+  <string>
+    <original>Increase Monitor Volume {1}%</original>
+    <translation>XXXXXXXX XXXXXXX XXXXXX {1}%</translation>
+  </string>
+  <string>
+    <original>Increase Monitor Volume {1} units</original>
+    <translation>XXXXXXXX XXXXXXX XXXXXX {1} XXXXX</translation>
+  </string>
+  <string>
+    <original>Decrease Monitor Volume</original>
+    <translation>XXXXXXX XXXXXXX XXXXXX</translation>
+  </string>
+  <string>
+    <original>Decrease Monitor Volume {1}%</original>
+    <translation>XXXXXXX XXXXXXX XXXXXX {1}%</translation>
+  </string>
+  <string>
+    <original>Decrease Monitor Volume {1} units</original>
+    <translation>XXXXXXX XXXXXXX XXXXXX {1} XXXXX</translation>
   </string>
   <string>
     <original>Set Volume</original>

@@ -10,8 +10,7 @@ Current Trust Measures
 
 * Release binaries are built by GitHub Actions from the tagged source.
 * Portable releases are distributed through GitHub Releases.
-* Release notes include SHA256 information.
-* Future release assets include `SHA256SUMS.txt`.
+* Release notes or release assets include SHA256 information.
 * Automatic update code has been removed; the app does not download or execute
   replacement binaries.
 * Unsupported inherited modules such as brightness, eject, and keyboard-status
@@ -29,6 +28,8 @@ The main app may:
 * Open the Windows volume mixer from the tray menu.
 * Read display identity information from the registry.
 * Read and set system volume through Windows audio APIs.
+* Read and set monitor audio volume through local Windows DDC/CI monitor APIs
+  when a monitor-volume hotkey is configured.
 
 The settings app may:
 
@@ -45,11 +46,3 @@ If an official release is detected by Microsoft Defender:
 3. Submit the file to Microsoft Security Intelligence as an incorrect detection:
    https://www.microsoft.com/en-us/wdsi/filesubmission
 4. Include the release URL, SHA256 hash, and detection name in the submission.
-
-Long-Term Improvements
-----------------------
-
-The best long-term trust improvement is code signing. A signed executable gives
-Windows and antivirus vendors a stable publisher identity and allows reputation
-to accumulate across releases. Until signing is available, keep releases
-transparent, reproducible from source, and easy to verify.

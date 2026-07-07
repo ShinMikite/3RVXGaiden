@@ -111,6 +111,8 @@
 #define BTN_CANCELKEYS                  1053
 #define CHK_AVOIDPRIMARY                1054
 #define CHK_ENABLEVOSD                  1055
+#define LBL_MONITORTARGET               1057
+#define CMB_MONITORTARGET               1058
 #define IDC_STATIC                      -1
 #define LBL_XML                         -1
 #define GRP_UPDATES                     -1
@@ -121,9 +123,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1055
+#define _APS_NEXT_CONTROL_VALUE         1059
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

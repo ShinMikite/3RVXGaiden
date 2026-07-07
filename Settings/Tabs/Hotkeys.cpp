@@ -3,10 +3,14 @@
 
 #include "Hotkeys.h"
 
+#include <algorithm>
 #include <CommCtrl.h>
+
+#include <vector>
 
 #include "../../3RVX/HotkeyInfo.h"
 #include "../../3RVX/HotkeyManager.h"
+#include "../../3RVX/DisplayManager.h"
 #include "../../3RVX/LanguageTranslator.h"
 #include "../../3RVX/Logger.h"
 #include "../../3RVX/Settings.h"
@@ -36,6 +40,25 @@ void Hotkeys::Initialize() {
     _action->OnSelectionChange = std::bind(&Hotkeys::OnActionChange, this);
 
     _argLabel = new Label(LBL_ARG, *this);
+    _monitorLabel = new Label(LBL_MONITORTARGET, *this);
+    _monitorCombo = new ComboBox(CMB_MONITORTARGET, *this);
+    _monitorCombo->OnSelectionChange = [this]() {
+        int selectionIdx = _keyList->Selection();
+        HotkeyInfo *current = CurrentHotkeyInfo();
+        if (selectionIdx == -1 || current == NULL
+                || !IsMonitorVolumeAction((HotkeyInfo::HotkeyActions) current->action)) {
+            return false;
+        }
+
+        int monitorIdx = _monitorCombo->SelectionIndex();
+        current->AllocateArg(2);
+        current->args[2] = L"";
+        if (monitorIdx >= 0 && monitorIdx < (int) _monitorIds.size()) {
+            current->args[2] = _monitorIds[monitorIdx];
+        }
+        _keyList->ItemText(selectionIdx, 1, ActionString(*current));
+        return true;
+    };
     _argCheck = new Checkbox(CHK_ARG, *this);
     _argCheck->OnClick = std::bind(&Hotkeys::OnArgCheckChange, this);
     _argCombo = new ComboBox(CMB_ARG, *this);
@@ -54,7 +77,11 @@ void Hotkeys::LoadSettings() {
     _hotkeysColumnStr = _translator->Translate(_hotkeysColumnStr);
     _actionColumnStr = _translator->Translate(_actionColumnStr);
     _amountVolArgStr = _translator->Translate(_amountVolArgStr);
+    _monitorArgStr = _translator->Translate(_monitorArgStr);
+    _autoMonitorStr = _translator->Translate(_autoMonitorStr);
+    _disconnectedMonitorStr = _translator->Translate(_disconnectedMonitorStr);
     _unitsVolArgStr = _translator->Translate(_unitsVolArgStr);
+    _unitsMonitorArgStr = _translator->Translate(_unitsMonitorArgStr);
     _percentVolArgStr = _translator->Translate(_percentVolArgStr);
     /* Make highlighted items span the entire row in the list view */
     _keyList->AddListExStyle(LVS_EX_FULLROWSELECT);
@@ -65,12 +92,26 @@ void Hotkeys::LoadSettings() {
     _keyList->AddColumn(_hotkeysColumnStr, (int) (width * .485));
     _keyList->AddColumn(_actionColumnStr, (int) (width * .445));
 
+    const std::vector<HotkeyInfo::HotkeyActions> actionOrder = {
+        HotkeyInfo::IncreaseVolume,
+        HotkeyInfo::DecreaseVolume,
+        HotkeyInfo::IncreaseMonitorVolume,
+        HotkeyInfo::DecreaseMonitorVolume,
+        HotkeyInfo::SetVolume,
+        HotkeyInfo::Mute,
+        HotkeyInfo::VolumeSlider,
+        HotkeyInfo::DisableOSD,
+        HotkeyInfo::Settings,
+        HotkeyInfo::Exit,
+    };
+
     _actionIds.clear();
-    for (unsigned int i = 0; i < HotkeyInfo::ActionNames.size(); ++i) {
-        HotkeyInfo::HotkeyActions action = (HotkeyInfo::HotkeyActions) i;
+    for (HotkeyInfo::HotkeyActions action : actionOrder) {
         if (HotkeyInfo::IsSupportedAction(action)) {
-            _actionIds.push_back(i);
-            _action->AddItem(_translator->Translate(HotkeyInfo::ActionNames[i]));
+            int actionId = (int) action;
+            _actionIds.push_back(actionId);
+            _action->AddItem(_translator->Translate(
+                HotkeyInfo::ActionNames[actionId]));
         }
     }
 
@@ -158,12 +199,21 @@ void Hotkeys::LoadAction(int index, HotkeyInfo &selection) {
 
     /* Default visiblities */
     bool showLabel = false;
+    bool showMonitor = false;
     bool showCheck = false;
     bool showCombo = false;
     bool showEdit = false;
     bool showButton = false;
 
     switch ((HotkeyInfo::HotkeyActions) action) {
+    case HotkeyInfo::IncreaseMonitorVolume:
+    case HotkeyInfo::DecreaseMonitorVolume:
+        MonitorArgControlStates(selection);
+        showMonitor = true;
+        VolumeArgControlStates(selection);
+        showCheck = true; showCombo = true; showEdit = true;
+        break;
+
     case HotkeyInfo::IncreaseVolume:
     case HotkeyInfo::DecreaseVolume:
         VolumeArgControlStates(selection);
@@ -181,6 +231,8 @@ void Hotkeys::LoadAction(int index, HotkeyInfo &selection) {
 
     /* Update control visibility */
     _argLabel->Visible(showLabel);
+    _monitorLabel->Visible(showMonitor);
+    _monitorCombo->Visible(showMonitor);
     _argCheck->Visible(showCheck);
     _argCombo->Visible(showCombo);
     _argEdit->Visible(showEdit);
@@ -221,6 +273,8 @@ std::wstring Hotkeys::ActionString(HotkeyInfo &selection) {
     switch ((HotkeyInfo::HotkeyActions) selection.action) {
     case HotkeyInfo::IncreaseVolume:
     case HotkeyInfo::DecreaseVolume:
+    case HotkeyInfo::IncreaseMonitorVolume:
+    case HotkeyInfo::DecreaseMonitorVolume:
     case HotkeyInfo::SetVolume:
         actionStr = _translator->TranslateAndReplace(
             VolumeActionString(selection),
@@ -255,6 +309,22 @@ std::wstring Hotkeys::VolumeActionString(HotkeyInfo &selection) {
         }
         break;
 
+    case HotkeyInfo::IncreaseMonitorVolume:
+        if (type == HotkeyInfo::VolumeKeyArgTypes::Percentage) {
+            actionStr = L"Increase Monitor Volume {1}%";
+        } else {
+            actionStr = L"Increase Monitor Volume {1} units";
+        }
+        break;
+
+    case HotkeyInfo::DecreaseMonitorVolume:
+        if (type == HotkeyInfo::VolumeKeyArgTypes::Percentage) {
+            actionStr = L"Decrease Monitor Volume {1}%";
+        } else {
+            actionStr = L"Decrease Monitor Volume {1} units";
+        }
+        break;
+
     case HotkeyInfo::SetVolume:
         if (type == HotkeyInfo::VolumeKeyArgTypes::Percentage) {
             actionStr = L"Set Volume: {1}%";
@@ -270,16 +340,24 @@ std::wstring Hotkeys::VolumeActionString(HotkeyInfo &selection) {
 void Hotkeys::DefaultArgControlStates() {
     CLOG(L"Setting default control states");
     _argLabel->Visible(false);
+    _monitorLabel->Visible(false);
+    _monitorCombo->Visible(false);
     _argCheck->Visible(false);
     _argCombo->Visible(false);
     _argEdit->Visible(false);
     _argButton->Visible(false);
 
+    _monitorCombo->Enabled(false);
     _argCombo->Enabled(false);
     _argEdit->Enabled(false);
     _argButton->Enabled(false);
 
     _argLabel->Text(L"");
+    _monitorLabel->Text(L"");
+    _monitorCombo->Clear();
+    _monitorCombo->Width(_action->Width());
+    _monitorCombo->PlaceRightOf(*_monitorLabel);
+    _monitorCombo->X(_action->X());
     _argCheck->Text(L"");
     _argCheck->Checked(false);
     _argCombo->Clear();
@@ -295,13 +373,17 @@ void Hotkeys::DefaultArgControlStates() {
 void Hotkeys::VolumeArgControlStates(HotkeyInfo &selection) {
     _argLabel->Text(_amountVolArgStr);
     _argCheck->Text(_amountVolArgStr);
-    _argCheck->Checked(selection.HasArgs());
+    _argCheck->Checked(selection.HasArg(0) && selection.args[0] != L"");
     _argEdit->Enabled(_argCheck->Checked());
     _argEdit->Width(_argEdit->EmSize() * 6);
     _argEdit->PlaceRightOf(*_argCheck);
     _argEdit->X(_action->X());
     _argCombo->Enabled(_argCheck->Checked());
-    _argCombo->AddItem(_unitsVolArgStr);
+    if (IsMonitorVolumeAction((HotkeyInfo::HotkeyActions) selection.action)) {
+        _argCombo->AddItem(_unitsMonitorArgStr);
+    } else {
+        _argCombo->AddItem(_unitsVolArgStr);
+    }
     _argCombo->AddItem(_percentVolArgStr);
     _argCombo->Select(0);
     _argCombo->PlaceRightOf(*_argEdit);
@@ -313,6 +395,66 @@ void Hotkeys::VolumeArgControlStates(HotkeyInfo &selection) {
     if (selection.HasArg(1)) {
         _argCombo->Select(selection.ArgToInt(1));
     }
+}
+
+void Hotkeys::MonitorArgControlStates(HotkeyInfo &selection) {
+    _monitorLabel->Text(_monitorArgStr);
+    _monitorCombo->Enabled(true);
+    _monitorCombo->Clear();
+    _monitorIds.clear();
+    AddMonitorOption(_autoMonitorStr, L"");
+
+    DisplayManager::UpdateMonitorMap();
+    std::unordered_map<std::wstring, Monitor> monitors
+        = DisplayManager::MonitorMap();
+    for (auto it = monitors.begin(); it != monitors.end(); ++it) {
+        std::wstring label = it->second.DisplayName();
+        std::vector<std::wstring> monitorLabels = _monitorCombo->Items();
+        if (std::find(monitorLabels.begin(), monitorLabels.end(), label)
+                != monitorLabels.end()) {
+            label += L" (" + it->second.DeviceName() + L")";
+        }
+        AddMonitorOption(label, it->first);
+    }
+
+    std::wstring monitorName = L"";
+    if (selection.HasArg(2)) {
+        monitorName = selection.args[2];
+    }
+
+    int selectedIdx = 0;
+    for (unsigned int i = 0; i < _monitorIds.size(); ++i) {
+        if (monitorName == _monitorIds[i]) {
+            selectedIdx = i;
+            break;
+        }
+    }
+    if (selectedIdx == 0 && monitorName != L"") {
+        for (unsigned int i = 0; i < _monitorIds.size(); ++i) {
+            std::unordered_map<std::wstring, Monitor>::iterator found
+                = monitors.find(_monitorIds[i]);
+            if (found != monitors.end()
+                    && monitorName == found->second.DeviceName()) {
+                selectedIdx = i;
+                break;
+            }
+        }
+    }
+    if (selectedIdx == 0 && monitorName != L"") {
+        AddMonitorOption(_disconnectedMonitorStr, monitorName);
+        selectedIdx = _monitorCombo->Count() - 1;
+    }
+    _monitorCombo->Select(selectedIdx);
+}
+
+void Hotkeys::AddMonitorOption(std::wstring label, std::wstring monitorId) {
+    _monitorCombo->AddItem(label);
+    _monitorIds.push_back(monitorId);
+}
+
+bool Hotkeys::IsMonitorVolumeAction(HotkeyInfo::HotkeyActions action) {
+    return action == HotkeyInfo::IncreaseMonitorVolume
+        || action == HotkeyInfo::DecreaseMonitorVolume;
 }
 
 int Hotkeys::ActionComboIndex(int action) {
@@ -445,6 +587,8 @@ bool Hotkeys::OnArgComboChange() {
     switch (action) {
     case HotkeyInfo::IncreaseVolume:
     case HotkeyInfo::DecreaseVolume:
+    case HotkeyInfo::IncreaseMonitorVolume:
+    case HotkeyInfo::DecreaseMonitorVolume:
     case HotkeyInfo::SetVolume:
         current->AllocateArg(1);
         current->args[1] = std::to_wstring(_argCombo->SelectionIndex());
@@ -472,9 +616,20 @@ bool Hotkeys::OnArgCheckChange() {
     switch (action) {
     case HotkeyInfo::IncreaseVolume:
     case HotkeyInfo::DecreaseVolume:
+    case HotkeyInfo::IncreaseMonitorVolume:
+    case HotkeyInfo::DecreaseMonitorVolume:
         if (_argCheck->Checked() == false) {
             _argEdit->Clear();
+            std::wstring monitor = L"";
+            if (IsMonitorVolumeAction(action) && current->HasArg(2)) {
+                monitor = current->args[2];
+            }
+
             current->args.clear();
+            if (monitor != L"") {
+                current->AllocateArg(2);
+                current->args[2] = monitor;
+            }
             _keyList->ItemText(selectionIdx, 1, ActionString(*current));
         }
         break;
@@ -500,6 +655,8 @@ bool Hotkeys::OnArgEditTextChange() {
     switch ((HotkeyInfo::HotkeyActions) current->action) {
     case HotkeyInfo::IncreaseVolume:
     case HotkeyInfo::DecreaseVolume:
+    case HotkeyInfo::IncreaseMonitorVolume:
+    case HotkeyInfo::DecreaseMonitorVolume:
     case HotkeyInfo::SetVolume:
         current->AllocateArg(0);
         current->args[0] = _argEdit->Text();

@@ -10,12 +10,15 @@
 #include "..\MeterWnd\Animations\FadeOut.h"
 #include "..\MeterWnd\MeterCallbackReceiver.h"
 #include "..\MeterWnd\MeterWnd.h"
+#include "..\Monitor.h"
 #include "..\NotifyIcon.h"
 #include "OSD.h"
 
 class CallbackMeter;
+class DDCMonitorVolumeController;
 class Skin;
 class SoundPlayer;
+class VolumeController;
 class VolumeSlider;
 
 class VolumeOSD : public OSD, MeterCallbackReceiver {
@@ -31,12 +34,16 @@ public:
 
 private:
     CoreAudio *_volumeCtrl;
+    DDCMonitorVolumeController *_monitorVolumeCtrl;
     float _defaultIncrement;
     float _lastVolume;
     bool _muted;
     bool _monitorSession;
     bool _subscribeVolEvents;
     bool _unlockUnmute;
+    bool _monitorVolumePositioned;
+    Monitor _monitorVolumeMonitor;
+    std::wstring _monitorVolumeTarget;
     std::vector<VolumeTransformation *> _volumeTransformations;
 
     MeterWnd _mWnd;
@@ -61,6 +68,11 @@ private:
     void MeterLevels(float value);
     virtual void MeterChangeCallback(int units);
     void ProcessVolumeHotkeys(HotkeyInfo &hki);
+    void ProcessMonitorVolumeHotkeys(HotkeyInfo &hki);
+    void ChangeVolume(HotkeyInfo &hki, VolumeController *volumeCtrl);
+    void ChangeMonitorVolume(HotkeyInfo &hki);
+    bool EnsureMonitorVolumeController(HotkeyInfo &hki);
+    void ShowMonitorVolumeChange();
     void UpdateIcon();
     void UpdateIconImage();
     void UpdateIconTip();

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <settings>
-
+  <hotkeys>
+    <hotkey combination="131503" action="Increase Monitor Volume" />
+    <hotkey combination="131502" action="Decrease Monitor Volume" />
+  </hotkeys>
 </settings>

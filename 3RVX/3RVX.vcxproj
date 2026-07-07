@@ -217,6 +217,7 @@
     <ClInclude Include="CommCtl.h" />
     <ClInclude Include="Controllers\Volume\CoreAudio.h" />
     <ClInclude Include="Controllers\Volume\CurveTransformer.h" />
+    <ClInclude Include="Controllers\Volume\DDCMonitorVolumeController.h" />
     <ClInclude Include="Controllers\Volume\VolumeLimiter.h" />
     <ClInclude Include="Controllers\Volume\VolumeTransformation.h" />
     <ClInclude Include="Controllers\Volume\VolumeController.h" />
@@ -283,6 +284,7 @@
     <ClCompile Include="3RVX.cpp" />
     <ClCompile Include="3RVXConsts.cpp" />
     <ClCompile Include="Controllers\Volume\CoreAudio.cpp" />
+    <ClCompile Include="Controllers\Volume\DDCMonitorVolumeController.cpp" />
     <ClCompile Include="D3DDevice.cpp" />
     <ClCompile Include="DisplayManager.cpp" />
     <ClCompile Include="Error.cpp" />

@@ -16,6 +16,8 @@ Supported Scope
 * Volume and mute on-screen displays.
 * The volume slider.
 * Volume hotkeys.
+* Monitor volume hotkeys for DDC/CI-capable displays that expose MCCS audio
+  volume (`0x62`) over the current display input.
 * Basic app-control hotkeys, such as opening Settings, toggling the OSD, and
   exiting the app.
 * Stable monitor targeting using display identity instead of changing
@@ -29,6 +31,9 @@ Out of Scope
 The inherited brightness, eject, keyboard-status, generic run-command, virtual
 key, and media-key remapping surfaces are not part of the supported
 3RVXGaiden app surface.
+
+Monitor volume support is intentionally limited to volume control. It is not a
+general monitor-management or brightness-control surface.
 
 Some of that original code may remain in the repository while the fork is being
 trimmed, but it should not be exposed in the app UI, registered at runtime, or
@@ -44,6 +49,11 @@ low-level hook system, but they are more sensitive to Windows hook behavior,
 modifier state, and device-specific input handling. Treat keyboard shortcuts as
 the preferred and most reliable configuration unless a mouse shortcut has been
 tested on the target system.
+
+Monitor volume shortcuts should be configured as keyboard hotkeys, such as
+Ctrl + Volume Up and Ctrl + Volume Down. Avoid binding monitor volume to
+Ctrl + mouse wheel because Ctrl + wheel is commonly used for zoom in other
+applications.
 
 Trust And Distribution
 ----------------------
