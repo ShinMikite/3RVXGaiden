@@ -10,6 +10,7 @@
 #include <ctime>
 #include <gdiplus.h>
 #include <iostream>
+#include <shellapi.h>
 #include <Wtsapi32.h>
 
 #include "DisplayManager.h"
@@ -20,6 +21,30 @@
 #include "Settings.h"
 #include "Skin/AccentColor.h"
 #include "Skin/SkinManager.h"
+
+namespace {
+    constexpr UINT_PTR TIMER_STARTUP_LOAD = 1001;
+    constexpr UINT STARTUP_LOAD_DELAY_MS = 15000;
+
+    bool HasCommandLineFlag(LPCWSTR flag) {
+        int argc = 0;
+        LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+        if (argv == NULL) {
+            return false;
+        }
+
+        bool found = false;
+        for (int i = 1; i < argc; ++i) {
+            if (_wcsicmp(argv[i], flag) == 0) {
+                found = true;
+                break;
+            }
+        }
+
+        LocalFree(argv);
+        return found;
+    }
+}
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     _In_ LPWSTR lpCmdLine, _In_ int nShowCmd) {
@@ -67,7 +92,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     }
 
     /* Tell the program to initialize once the message loop is running. */
-    PostMessage(mainWnd.Handle(), _3RVX::WM_3RVX_CTRL, _3RVX::MSG_LOAD, NULL);
+    if (HasCommandLineFlag(L"--startup")) {
+        SetTimer(mainWnd.Handle(), TIMER_STARTUP_LOAD,
+            STARTUP_LOAD_DELAY_MS, NULL);
+    } else {
+        PostMessage(mainWnd.Handle(), _3RVX::WM_3RVX_CTRL,
+            _3RVX::MSG_LOAD, NULL);
+    }
 
     /* Register for session change notifications */
     WTSRegisterSessionNotification(mainWnd.Handle(), NOTIFY_FOR_THIS_SESSION);
@@ -205,8 +236,11 @@ LRESULT _3RVX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
     case WM_CLOSE: {
         CLOG(L"Shutting down");
+        KillTimer(Handle(), TIMER_STARTUP_LOAD);
         HideWin10VolumeOSD::ShowOSD();
-        HotkeyManager::Instance()->Shutdown();
+        if (HotkeyManager::Instance() != NULL) {
+            HotkeyManager::Instance()->Shutdown();
+        }
         if (_vOSD) {
             _vOSD->HideIcon();
         }
@@ -215,6 +249,16 @@ LRESULT _3RVX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
     case WM_DESTROY: {
         PostQuitMessage(0);
+        break;
+    }
+
+    case WM_TIMER: {
+        if (wParam == TIMER_STARTUP_LOAD) {
+            KillTimer(Handle(), TIMER_STARTUP_LOAD);
+            PostMessage(Handle(), _3RVX::WM_3RVX_CTRL, _3RVX::MSG_LOAD, NULL);
+            break;
+        }
+
         break;
     }
 

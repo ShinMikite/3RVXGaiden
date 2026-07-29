@@ -118,13 +118,15 @@ bool General::RunOnStartup(bool enable) {
     bool ok = false;
 
     std::wstring path = Settings::AppDir() + L"\\3RVX.exe";
+    std::wstring command = L"\"" + path + L"\" --startup";
 
     res = RegOpenKeyEx(HKEY_CURRENT_USER, REGKEY_RUN,
         NULL, KEY_ALL_ACCESS, &key);
     if (res == ERROR_SUCCESS) {
         if (enable) {
             res = RegSetValueEx(key, REGKEY_NAME, NULL, REG_SZ,
-                (LPBYTE) path.c_str(), (path.size() + 1) * sizeof(TCHAR));
+                (LPBYTE) command.c_str(),
+                (command.size() + 1) * sizeof(wchar_t));
             ok = (res == ERROR_SUCCESS);
         } else {
             res = RegDeleteValue(key, REGKEY_NAME);

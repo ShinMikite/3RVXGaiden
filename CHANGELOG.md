@@ -10,6 +10,10 @@
 * Improved monitor-volume hotkey responsiveness by coalescing rapid volume-key
   input into the latest pending DDC/CI volume target.
 * Hardened hotkey hook startup/reload handling.
+* Delayed Run-key startup initialization briefly to avoid colliding with other
+  login apps while they initialize global input/device hooks.
+* Quoted the Windows startup command and guarded volume OSD restore calls when
+  the native Windows volume host has not been found.
 
 3RVXGaiden v0.4.0-preview
 -------------------------
