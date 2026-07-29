@@ -25,6 +25,13 @@ and app-control hotkeys.
 8. Push the commit and tag to GitHub.
 9. Create or update the GitHub Release for the tag.
 10. Upload only the current portable zip, `SHA256SUMS.txt`, plus the auto-generated source archives.
-11. Include highlights, the SHA256 hash, and a changelog link in the release notes.
+11. Include a prominent download note telling users to choose the
+    `-portable.zip` asset, extract it, and run `3RVX.exe`. Explicitly state that
+    GitHub's Source code archives are for developers and contain no executable.
+12. Include highlights, the SHA256 hash, and a changelog link in the release
+    notes.
+13. Download the published portable zip and confirm that its SHA256 matches
+    both `SHA256SUMS.txt` and the hash written in the release notes. Repeat this
+    check whenever a workflow rerun replaces release assets.
 
 Automatic updates are not built into 3RVXGaiden. GitHub Releases are the supported distribution channel for now.
