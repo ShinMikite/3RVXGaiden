@@ -4,8 +4,8 @@ Security Policy
 Supported Versions
 ------------------
 
-3RVXGaiden is currently distributed as preview builds through GitHub Releases.
-Use the latest preview release unless you are testing a specific older build.
+3RVXGaiden is distributed through GitHub Releases. Use the latest release unless
+you are testing a specific older build.
 
 Reporting Security Issues
 -------------------------

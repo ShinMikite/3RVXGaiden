@@ -4,6 +4,37 @@
 ====
 3RVXGaiden is a lightweight, volume-focused fork of the original [3RVX](https://3RVX.com) for Windows systems.
 
+Download and run
+----------------
+
+**Want to try the app?** Go to the
+[GitHub Releases](https://github.com/ShinMikite/3RVXGaiden/releases)
+page and download the file whose name ends in **`-portable.zip`**.
+
+Do **not** download GitHub's automatically generated **Source code (zip)** or
+**Source code (tar.gz)** files unless you intend to build the app yourself.
+Those archives do not contain the Windows executables.
+
+1. Extract the portable ZIP to a folder.
+2. Keep all of the extracted files and folders together.
+3. Run `3RVX.exe`.
+4. Use the 3RVX icon in the Windows notification area to open **Settings**.
+
+There is currently no installer. The portable build is made for 64-bit Windows
+10 and Windows 11. To remove it, exit 3RVX and delete the extracted folder. If
+you enabled **Start with Windows**, turn that option off in Settings first.
+
+Release builds are not yet digitally signed, so Windows or antivirus software
+may display a warning. Only download builds from this repository's Releases
+page and verify the ZIP against the accompanying `SHA256SUMS.txt` file. See
+[Security and verification](#security-and-verification) for more information.
+
+> **For developers:** Build instructions are below. Most users only need the
+> portable ZIP.
+
+What it does
+------------
+
 This fork improves multi-monitor handling by saving stable monitor identities instead of relying on changing `DISPLAY#` assignments.
 This helps keep the OSD on the selected monitor when another display is disconnected, powered off, or switched to a different input during startup.
 
@@ -22,7 +53,7 @@ Releases: [GitHub Releases](https://github.com/ShinMikite/3RVXGaiden/releases)
 
 Security and verification
 -------------------------
-3RVXGaiden preview builds are currently unsigned. Official builds are published
+3RVXGaiden release builds are currently unsigned. Official builds are published
 through GitHub Releases with SHA256 information so users can verify downloads.
 See [SECURITY.md](SECURITY.md) and
 [Antivirus False Positives](Documentation/AV_False_Positives.md) for details.
