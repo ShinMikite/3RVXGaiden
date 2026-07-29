@@ -1,8 +1,8 @@
 3RVX Changelog
 ==============
 
-3RVXGaiden v0.4.1-preview
--------------------------
+3RVXGaiden v0.4.1
+-----------------
 * Fixed monitor-volume hotkeys not applying on some displays whose DDC/CI
   physical monitor handle compares as `NULL`.
 * Fixed Settings showing Apply as changed immediately after opening due to
