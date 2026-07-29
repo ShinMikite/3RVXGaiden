@@ -67,11 +67,21 @@ HWND HideWin10VolumeOSD::FindOSDWindow(bool bSilent)
 
 void HideWin10VolumeOSD::HideOSD()
 {
+  if (hWndInject == 0)
+  {
+      return;
+  }
+
   ShowWindow(hWndInject, 6); // SW_MINIMIZE
 }
 
 void HideWin10VolumeOSD::ShowOSD()
 {
+  if (hWndInject == 0)
+  {
+      return;
+  }
+
   ShowWindow(hWndInject, 9); // SW_RESTORE
 
   // show window on the screen
